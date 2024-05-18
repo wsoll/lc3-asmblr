@@ -1,4 +1,12 @@
 import unittest
+
+from asmblr.asmblr import (
+    process_pseudo_ops,
+    process_instr,
+    link_labels_def_to_labels_usage,
+    process_label,
+)
+from asmblr.gbl_const import Result
 from asmblr.state import State
 from run import produce_output
 
