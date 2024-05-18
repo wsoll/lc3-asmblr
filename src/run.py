@@ -1,5 +1,11 @@
 import os
 
+from asmblr import (
+    process_pseudo_ops,
+    process_instr,
+    process_label,
+    link_labels_def_to_labels_usage,
+)
 from state import State
 from gbl_const import Result
 
