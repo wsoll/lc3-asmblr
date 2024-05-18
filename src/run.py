@@ -1,7 +1,7 @@
 import os
 
-from asmblr.state import State
-from asmblr.gbl_const import Result
+from state import State
+from gbl_const import Result
 
 
 def load_file():
