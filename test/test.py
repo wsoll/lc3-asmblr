@@ -1,9 +1,9 @@
 import unittest
-from state import State
-from asmblr import *
+from asmblr.state import State
 from run import produce_output
 
-class TestPseudoOps(unittest.TestCase):
+
+class TestPseudoOps:
     def setUp(self):
         self.state = State()
 
@@ -16,7 +16,7 @@ class TestPseudoOps(unittest.TestCase):
         self.assertEqual(output, b'\x30\x00')
 
     def test_fill_1(self):
-        self.test_orig() #start from x3000
+        self.test_orig()  # start from x3000
         words = ".FILL x5".split()
         result = process_pseudo_ops(words, self.state)
         self.assertEqual(result, Result.FOUND)
@@ -75,7 +75,6 @@ class TestPseudoOps(unittest.TestCase):
                                 self.state.pc, self.state.orig)
         self.assertEqual(output.hex()[4:], '00000000')
 
-
     def test_blkw_2_label(self):
         pass
 
@@ -126,6 +125,7 @@ class TestPseudoOps(unittest.TestCase):
         result = process_pseudo_ops(words_1, self.state)
         self.assertEqual(result, Result.BREAK)
 
+
 class TestInstructions(unittest.TestCase):
     def setUp(self):
         self.state = State()
@@ -153,14 +153,13 @@ class TestInstructions(unittest.TestCase):
         self.assertEqual(output.hex()[8:12], 'f025')
         self.assertEqual(output.hex()[12:16], '00ff')
 
-
     def test_add_1(self):
         words = "ADD R0, R1, R2".split()
         result = process_instr(words, self.state)
         self.assertEqual(result, Result.FOUND)
         output = produce_output(self.state.swap, self.state.memory,
                                 self.state.pc, self.state.orig)
-        self.assertEqual(output.hex()[4:8],'1042')
+        self.assertEqual(output.hex()[4:8], '1042')
 
     def test_add_2(self):
         words = "ADD R0, R1, x5".split()
@@ -261,7 +260,7 @@ class TestInstructions(unittest.TestCase):
 
         output = produce_output(self.state.swap, self.state.memory,
                                 self.state.pc, self.state.orig)
-        self.assertEqual(output.hex()[4:8] , '2080')
+        self.assertEqual(output.hex()[4:8], '2080')
 
     def test_ld(self):
         words_1 = "LD R1, FOO".split()
@@ -270,7 +269,6 @@ class TestInstructions(unittest.TestCase):
     def test_ldi(self):
         words_1 = "LDI R1, FOO".split()
         self.work_with_label(words_1, 'a201')
-
 
     def test_ldr(self):
         words_1 = "LDR R2, R1, #5".split()
@@ -366,7 +364,6 @@ class TestInstructions(unittest.TestCase):
 
     def test_rti(self):
         pass
-
 
 
 if __name__ == '__main__':

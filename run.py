@@ -1,8 +1,7 @@
 import os
 
-from asmblr import *
-from state import State
-from gbl_const import Result
+from asmblr.state import State
+from asmblr.gbl_const import Result
 
 def load_file():
     fn = "none"
