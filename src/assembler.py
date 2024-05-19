@@ -1,16 +1,73 @@
-from array import array
+from buffer import Buffer
 
 
-class Assembler:
+class Assembler(Buffer):
     def __init__(self):
-        # Immutable
-        self.pc = 0
+        super().__init__()
         self.orig = 0
         self.verbose = True
         self.swap = True
 
-        # Mutable
-        self.memory = array("H", [0] * (1 << 16))
         self.labels_def_address = dict()
-        self.labels_usage_address = dict()
         self.regs = dict(("R%1i" % r, r) for r in range(8))
+
+        self.__pseudo_ops_mapping = {
+            ".ORIG": self._process_orig,
+            ".FILL": self._process_fill,
+            ".BLKW": self._process_blkw,
+            ".STRINGZ": self._process_stringz,
+            ".END": self._process_end,
+        }
+
+    def step(self):
+        ...
+
+    def _process_orig(self, line: str) -> None:
+        self.orig = self.pc = int(
+            "0" + line[1] if line[1].startswith("x") else line[1], 0
+        )
+
+    def _process_fill(self, line: str) -> None:
+        word = line[line.index(".FILL") + 1]
+        # TODO: handle exceptions
+        if word.startswith("x") or word.startswith("#"):
+            imm_value = self.get_immediate_value(word)
+            self.write_to_memory(imm_value)
+        # TODO: To check if needed (also for .STRINGZ, .BLKW)
+        elif self.valid_label(word):
+            self.set_label_usage_address(word, self.labels_usage_address, self.pc)
+        else:
+            raise ValueError(f"Invalid label: {word}")
+        if line[0] != ".FILL":
+            self.labels_def_address[line[0]] = self.pc
+        self.pc += 1
+
+    def _process_blkw(self, line: str) -> None:
+        if line[0] != ".BLKW":
+            self.labels_def_address[line[0]] = self.pc
+        word = line[line.index(".BLKW") + 1]
+        if word.startswith("x") or word.startswith("#"):
+            imm_value = self.get_immediate_value(word)
+            self.pc += imm_value
+        else:
+            raise ValueError(f"Invalid label: {word}")
+
+    def _process_stringz(self, line: str) -> None:
+        if line[0] != ".STRINGZ":
+            self.labels_def_address[line[0]] = self.pc
+        # TODO: handle exceptions (first and last ")
+        self.labels_def_address[line[0]] = self.pc
+
+        line = " ".join(line)
+        tmp = line.split('"')
+        string = tmp[1]
+
+        for char in string:
+            ascii_code = ord(char)
+            self.write_to_memory(ascii_code)
+            self.pc += 1
+        self.write_to_memory(0)
+        self.pc += 1
+
+    def _process_end(self):
+        ...
