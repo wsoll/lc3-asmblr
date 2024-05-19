@@ -54,7 +54,7 @@ def process_pseudo_ops(words, state):
         elif valid_label(word):
             set_label_usage_address(word, state.labels_usage_address, state.pc)
         else:
-            raise ValueError("Invalid label: %r" % (arg))
+            raise ValueError(f"Invalid label: {word}")
         if words[0] != ".FILL":
             state.labels_def_address[words[0]] = state.pc
         state.pc += 1
@@ -67,7 +67,7 @@ def process_pseudo_ops(words, state):
             imm_value = get_immediate_value(word)
             state.pc += imm_value
         else:
-            raise ValueError("Invalid label: %r" % (arg))
+            raise ValueError(f"Invalid label: {word}")
         return Result.FOUND
     elif ".STRINGZ" in words:
         if words[0] != ".STRINGZ":
@@ -104,7 +104,7 @@ def process_instr(words, state):
 
 def process_label(words, state):
     label = words[0]
-    instr = words[1]
+    # instr = words[1]
     if valid_label(label):
         state.labels_def_address[label] = state.pc
         # set_label_usage_address(label, state.labels_usage_address,
@@ -112,7 +112,7 @@ def process_label(words, state):
         words.pop(0)
         return process_instr(words, state)
     else:
-        raise ValueError("Invalid label: %r" % (word))
+        raise ValueError(f"Invalid label: {label}")
 
 
 def link_labels_def_to_labels_usage(labels_usage_address, labels_def_address, memory):

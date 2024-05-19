@@ -16,13 +16,13 @@ class TestInstructions:
         words_3 = "FOO .FILL xFF".split()
 
         result = process_instr(words_1, state)
-        assert (result, Result.FOUND)
+        assert result == Result.FOUND
 
         result = process_instr(words_2, state)
-        assert (result, Result.FOUND)
+        assert result == Result.FOUND
 
         result = process_pseudo_ops(words_3, state)
-        assert (result, Result.FOUND)
+        assert result == Result.FOUND
 
         link_labels_def_to_labels_usage(
             state.labels_usage_address,
@@ -31,9 +31,9 @@ class TestInstructions:
         )
 
         output = produce_output(state.swap, state.memory, state.pc, state.orig)
-        assert (output.hex()[4:8], hex_output_result)
-        assert (output.hex()[8:12], "f025")
-        assert (output.hex()[12:16], "00ff")
+        assert output.hex()[4:8] == hex_output_result
+        assert output.hex()[8:12] == "f025"
+        assert output.hex()[12:16] == "00ff"
 
     def test_add_1(self):
         state = State()
@@ -47,7 +47,7 @@ class TestInstructions:
         state = State()
         words = "ADD R0, R1, x5".split()
         result = process_instr(words, state)
-        assert (result, Result.FOUND)
+        assert result == Result.FOUND
         output = produce_output(state.swap, state.memory, state.pc, state.orig)
         assert output.hex()[4:8] == "1065"
 
@@ -55,7 +55,7 @@ class TestInstructions:
         state = State()
         words = "AND R3, R0, R2".split()
         result = process_instr(words, state)
-        assert (result, Result.FOUND)
+        assert result == Result.FOUND
         output = produce_output(state.swap, state.memory, state.pc, state.orig)
         assert output.hex()[4:8] == "5602"
 

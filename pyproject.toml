@@ -1,11 +1,13 @@
 [tool.mypy]
 exclude = 'venv'
 python_version = 3.11
-mypy_path = "asmblr"
+mypy_path = "src"
+explicit_package_bases = "True"
 
 [tool.flake8]
 max-line-length = 88
 exclude = ["venv", "__pycache__"]
+extend-ignore = ["E203"]
 
 [tool.black]
 line-length = 88

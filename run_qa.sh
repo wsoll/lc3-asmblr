@@ -1,8 +1,8 @@
 echo "Running black..."
-black --check asmblr/ test/
+black --check src/ test/
 
 echo "Running flake8..."
-flake8 asmblr/ test/
+flake8 src/ test/
 
 echo "Running mypy..."
-mypy asmblr/
+mypy src/
