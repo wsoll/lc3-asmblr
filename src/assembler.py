@@ -19,15 +19,24 @@ class Assembler(Buffer):
             ".END": self._process_end,
         }
 
-    def step(self):
-        ...
+    def step(self, line):
+        line_keywords = self.prepare_keywords(line)
+        for key, method in self.__pseudo_ops_mapping.items():
+            if key in line_keywords:
+                method(line_keywords)
 
-    def _process_orig(self, line: str) -> None:
+    def prepare_keywords(self, line):
+        line = line.split(";")[0]
+        if self.verbose:
+            print(line.replace("\t", ""))
+        return line.split()
+
+    def _process_orig(self, line):
         self.orig = self.pc = int(
             "0" + line[1] if line[1].startswith("x") else line[1], 0
         )
 
-    def _process_fill(self, line: str) -> None:
+    def _process_fill(self, line):
         word = line[line.index(".FILL") + 1]
         # TODO: handle exceptions
         if word.startswith("x") or word.startswith("#"):
@@ -42,7 +51,7 @@ class Assembler(Buffer):
             self.labels_def_address[line[0]] = self.pc
         self.pc += 1
 
-    def _process_blkw(self, line: str) -> None:
+    def _process_blkw(self, line):
         if line[0] != ".BLKW":
             self.labels_def_address[line[0]] = self.pc
         word = line[line.index(".BLKW") + 1]
@@ -52,7 +61,7 @@ class Assembler(Buffer):
         else:
             raise ValueError(f"Invalid label: {word}")
 
-    def _process_stringz(self, line: str) -> None:
+    def _process_stringz(self, line):
         if line[0] != ".STRINGZ":
             self.labels_def_address[line[0]] = self.pc
         # TODO: handle exceptions (first and last ")
@@ -69,5 +78,4 @@ class Assembler(Buffer):
         self.write_to_memory(0)
         self.pc += 1
 
-    def _process_end(self):
-        ...
+    def _process_end(self, line): ...
