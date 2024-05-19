@@ -6,12 +6,12 @@ from asmblr import (
 )
 from gbl_const import Result
 from run import produce_output
-from state import State
+from assembler import Assembler
 
 
 class TestInstructions:
     def work_with_label(self, words_1, hex_output_result):
-        state = State()
+        state = Assembler()
         words_2 = "HALT".split()
         words_3 = "FOO .FILL xFF".split()
 
@@ -36,7 +36,7 @@ class TestInstructions:
         assert output.hex()[12:16] == "00ff"
 
     def test_add_1(self):
-        state = State()
+        state = Assembler()
         words = "ADD R0, R1, R2".split()
         result = process_instr(words, state)
         assert result == Result.FOUND
@@ -44,7 +44,7 @@ class TestInstructions:
         assert output.hex()[4:8] == "1042"
 
     def test_add_2(self):
-        state = State()
+        state = Assembler()
         words = "ADD R0, R1, x5".split()
         result = process_instr(words, state)
         assert result == Result.FOUND
@@ -52,7 +52,7 @@ class TestInstructions:
         assert output.hex()[4:8] == "1065"
 
     def test_and_1(self):
-        state = State()
+        state = Assembler()
         words = "AND R3, R0, R2".split()
         result = process_instr(words, state)
         assert result == Result.FOUND
@@ -60,7 +60,7 @@ class TestInstructions:
         assert output.hex()[4:8] == "5602"
 
     def test_and_2(self):
-        state = State()
+        state = Assembler()
         words = "AND R3, R0, #14".split()
         result = process_instr(words, state)
         assert result == Result.FOUND
@@ -68,7 +68,7 @@ class TestInstructions:
         assert output.hex()[4:8] == "562e"
 
     def test_br_and_ret(self):
-        state = State()
+        state = Assembler()
         words_1 = "BRnp FOO".split()
         words_2 = "HALT".split()
         words_3 = "FOO AND R3, R0, #14".split()
@@ -99,7 +99,7 @@ class TestInstructions:
         assert output.hex()[16:20] == "c1c0"
 
     def test_jmp_1(self):
-        state = State()
+        state = Assembler()
         words_1 = "JMP R2".split()
 
         result = process_instr(words_1, state)
@@ -109,7 +109,7 @@ class TestInstructions:
         assert output.hex()[4:8] == "c400"
 
     def test_jsr_and_ldr(self):
-        state = State()
+        state = Assembler()
         words_1 = "JSR FOO".split()
         words_2 = "HALT".split()
         words_3 = "HALT".split()
@@ -139,7 +139,7 @@ class TestInstructions:
         assert output.hex()[16:20] == "6885"
 
     def test_jsrr(self):
-        state = State()
+        state = Assembler()
         words_1 = "JSRR R2".split()
 
         result = process_instr(words_1, state)
@@ -157,7 +157,7 @@ class TestInstructions:
         self.work_with_label(words_1, "a201")
 
     def test_ldr(self):
-        state = State()
+        state = Assembler()
         words_1 = "LDR R2, R1, #5".split()
 
         result = process_instr(words_1, state)
@@ -171,7 +171,7 @@ class TestInstructions:
         self.work_with_label(words_1, "e201")
 
     def test_not(self):
-        state = State()
+        state = Assembler()
         words_1 = "NOT R2, R1".split()
 
         result = process_instr(words_1, state)
@@ -189,7 +189,7 @@ class TestInstructions:
         self.work_with_label(words_1, "b201")
 
     def test_str(self):
-        state = State()
+        state = Assembler()
         words_1 = "STR R2, R1, #5".split()
 
         result = process_instr(words_1, state)
@@ -199,7 +199,7 @@ class TestInstructions:
         assert output.hex()[4:8] == "7445"
 
     def test_getc(self):
-        state = State()
+        state = Assembler()
         words_1 = "GETC".split()
 
         result = process_instr(words_1, state)
@@ -209,7 +209,7 @@ class TestInstructions:
         assert output.hex()[4:8] == "f020"
 
     def test_out(self):
-        state = State()
+        state = Assembler()
         words_1 = "OUT".split()
 
         result = process_instr(words_1, state)
@@ -219,7 +219,7 @@ class TestInstructions:
         assert output.hex()[4:8] == "f021"
 
     def test_puts(self):
-        state = State()
+        state = Assembler()
         words_1 = "PUTS".split()
 
         result = process_instr(words_1, state)
@@ -229,7 +229,7 @@ class TestInstructions:
         assert output.hex()[4:8] == "f022"
 
     def test_in(self):
-        state = State()
+        state = Assembler()
         words_1 = "IN".split()
 
         result = process_instr(words_1, state)
@@ -239,7 +239,7 @@ class TestInstructions:
         assert output.hex()[4:8] == "f023"
 
     def test_putsp(self):
-        state = State()
+        state = Assembler()
         words_1 = "PUTSP".split()
 
         result = process_instr(words_1, state)

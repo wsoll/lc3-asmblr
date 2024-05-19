@@ -6,7 +6,7 @@ from asmblr import (
     process_label,
     link_labels_def_to_labels_usage,
 )
-from state import State
+from assembler import Assembler
 from gbl_const import Result
 
 
@@ -38,7 +38,7 @@ def produce_output(swap, memory, pc, orig):
 
 if __name__ == "__main__":
     asm_code = load_file()
-    state = State()
+    state = Assembler()
     state.verbose = input("Verbose Y/n? ").lower() != "n"
 
     for line in asm_code.splitlines():

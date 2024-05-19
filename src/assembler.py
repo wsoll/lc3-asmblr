@@ -1,7 +1,7 @@
 from array import array
 
 
-class State:
+class Assembler:
     def __init__(self):
         # Immutable
         self.pc = 0
