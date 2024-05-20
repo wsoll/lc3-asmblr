@@ -70,6 +70,18 @@ class Assembler(Encodings):
         else:
             return Result.NOT_FOUND
 
+    def process_label(self, words):
+        label = words[0]
+        # instr = words[1]
+        if self.valid_label(label):
+            self.labels_def_address[label] = self.pc
+            # set_label_usage_address(label, state.labels_usage_address,
+            #                   state.pc, imm_mask[instr], imm_bit_range[instr])
+            words.pop(0)
+            return self.process_instr(words)
+        else:
+            raise ValueError(f"Invalid label: {label}")
+
     def process_fill(self, line):
         word = line[line.index(".FILL") + 1]
         # TODO: handle exceptions

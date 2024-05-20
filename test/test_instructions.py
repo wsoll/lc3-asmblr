@@ -1,7 +1,4 @@
-from asmblr import (
-    link_labels_def_to_labels_usage,
-    process_label,
-)
+from asmblr import link_labels_def_to_labels_usage
 from gbl_const import Result
 from run import produce_output
 from assembler import Assembler
@@ -80,7 +77,7 @@ class TestInstructions:
         result = assembler.process_instr(words_2)
         assert result == Result.FOUND
 
-        result = process_label(words_3, assembler)
+        result = assembler.process_label(words_3)
         assert result == Result.FOUND
 
         result = assembler.process_instr(words_4)
@@ -124,7 +121,7 @@ class TestInstructions:
         result = assembler.process_instr(words_3)
         assert result == Result.FOUND
 
-        result = process_label(words_4, assembler)
+        result = assembler.process_label(words_4)
         assert result == Result.FOUND
 
         link_labels_def_to_labels_usage(

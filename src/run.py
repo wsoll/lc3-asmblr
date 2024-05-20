@@ -1,9 +1,7 @@
 import os
 
-from asmblr import (
-    process_label,
-    link_labels_def_to_labels_usage,
-)
+from asmblr import link_labels_def_to_labels_usage
+
 from assembler import Assembler
 from gbl_const import Result
 
@@ -53,7 +51,7 @@ if __name__ == "__main__":
         if result == Result.FOUND:
             continue
         elif result == Result.NOT_FOUND:
-            process_label(words, assembler)
+            assembler.process_label(words)
     link_labels_def_to_labels_usage(
         assembler.labels_usage_address, assembler.labels_def_address, assembler.memory
     )
