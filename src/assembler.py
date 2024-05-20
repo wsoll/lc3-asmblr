@@ -1,7 +1,9 @@
 from buffer import Buffer
+from encoding import Encodings
+from gbl_const import Result
 
 
-class Assembler(Buffer):
+class Assembler(Buffer, Encodings):
     def __init__(self):
         super().__init__()
         self.orig = 0
@@ -12,11 +14,10 @@ class Assembler(Buffer):
         self.regs = dict(("R%1i" % r, r) for r in range(8))
 
         self.__pseudo_ops_mapping = {
-            ".ORIG": self._process_orig,
-            ".FILL": self._process_fill,
-            ".BLKW": self._process_blkw,
-            ".STRINGZ": self._process_stringz,
-            ".END": self._process_end,
+            ".ORIG": self.process_orig,
+            ".FILL": self.process_fill,
+            ".BLKW": self.process_blkw,
+            ".STRINGZ": self.process_stringz,
         }
 
     def step(self, line):
@@ -31,12 +32,13 @@ class Assembler(Buffer):
             print(line.replace("\t", ""))
         return line.split()
 
-    def _process_orig(self, line):
+    def process_orig(self, line):
         self.orig = self.pc = int(
             "0" + line[1] if line[1].startswith("x") else line[1], 0
         )
+        return Result.FOUND
 
-    def _process_fill(self, line):
+    def process_fill(self, line):
         word = line[line.index(".FILL") + 1]
         # TODO: handle exceptions
         if word.startswith("x") or word.startswith("#"):
@@ -50,8 +52,9 @@ class Assembler(Buffer):
         if line[0] != ".FILL":
             self.labels_def_address[line[0]] = self.pc
         self.pc += 1
+        return Result.FOUND
 
-    def _process_blkw(self, line):
+    def process_blkw(self, line):
         if line[0] != ".BLKW":
             self.labels_def_address[line[0]] = self.pc
         word = line[line.index(".BLKW") + 1]
@@ -60,8 +63,9 @@ class Assembler(Buffer):
             self.pc += imm_value
         else:
             raise ValueError(f"Invalid label: {word}")
+        return Result.FOUND
 
-    def _process_stringz(self, line):
+    def process_stringz(self, line):
         if line[0] != ".STRINGZ":
             self.labels_def_address[line[0]] = self.pc
         # TODO: handle exceptions (first and last ")
@@ -77,5 +81,4 @@ class Assembler(Buffer):
             self.pc += 1
         self.write_to_memory(0)
         self.pc += 1
-
-    def _process_end(self, line): ...
+        return Result.FOUND

@@ -1,10 +1,9 @@
 from asmblr_tools import (
     write_to_memory,
-    get_immediate_value,
-    set_label_usage_address,
     valid_label,
     set_instr_args,
 )
+from assembler import Assembler
 from gbl_const import (
     instrs_keys,
     instrs_bin,
@@ -38,44 +37,15 @@ def process_br_instr(words, state):
     return fl
 
 
-def process_pseudo_ops(words, state):
+def process_pseudo_ops(words, assmbler: Assembler):
     if ".ORIG" in words:
-        state.orig = state.pc = int(
-            "0" + words[1] if words[1].startswith("x") else words[1], 0
-        )
-        return Result.FOUND
+        return assmbler.process_orig(words)
     elif ".FILL" in words:
-        word = words[words.index(".FILL") + 1]
-        # TODO: handle exceptions
-        if word.startswith("x") or word.startswith("#"):
-            imm_value = get_immediate_value(word)
-            write_to_memory(imm_value, state.memory, state.pc, state.verbose, "\n")
-        # TODO: To check if needed (also for .STRINGZ, .BLKW)
-        elif valid_label(word):
-            set_label_usage_address(word, state.labels_usage_address, state.pc)
-        else:
-            raise ValueError(f"Invalid label: {word}")
-        if words[0] != ".FILL":
-            state.labels_def_address[words[0]] = state.pc
-        state.pc += 1
-        return Result.FOUND
+        return assmbler.process_fill(words)
     elif ".BLKW" in words:
-        if words[0] != ".BLKW":
-            state.labels_def_address[words[0]] = state.pc
-        word = words[words.index(".BLKW") + 1]
-        if word.startswith("x") or word.startswith("#"):
-            imm_value = get_immediate_value(word)
-            state.pc += imm_value
-        else:
-            raise ValueError(f"Invalid label: {word}")
-        return Result.FOUND
+        return assmbler.process_blkw(words)
     elif ".STRINGZ" in words:
-        if words[0] != ".STRINGZ":
-            state.labels_def_address[words[0]] = state.pc
-        # TODO: handle exceptions (first and last ")
-        state.labels_def_address[words[0]] = state.pc
-        process_stringz_pseudo_op(words, state)
-        return Result.FOUND
+        return assmbler.process_stringz(words)
     elif ".END" in words:
         return Result.BREAK
     else:
