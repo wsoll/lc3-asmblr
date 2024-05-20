@@ -7,26 +7,26 @@ from encoding import Encodings
 class Assembler(Encodings):
     def __init__(self):
         super().__init__()
-        self.orig = 0
+        self.origin = 0
         self.verbose = True
         self.swap = True
 
-        self.pc = 0
+        self.program_counter = 0
         self.memory = array("H", [0] * (1 << 16))
         self.labels_usage_address = dict()
         self.labels_def_address = dict()
-        self.regs = dict(("R%1i" % r, r) for r in range(8))
+        self.registers = dict(("R%1i" % r, r) for r in range(8))
 
-        self.__pseudo_ops_mapping = {
-            ".ORIG": self.process_orig,
+        self.__directives_mapping = {
+            ".ORIG": self.process_origin,
             ".FILL": self.process_fill,
             ".BLKW": self.process_blkw,
             ".STRINGZ": self.process_stringz,
-            ".END": self.process_end,
+            ".END": lambda x: Result.BREAK,
         }
 
     def step(self, line_keywords):
-        for key, method in self.__pseudo_ops_mapping.items():
+        for key, method in self.__directives_mapping.items():
             if key in line_keywords:
                 return method(line_keywords)
         return Result.NOT_FOUND
@@ -37,8 +37,8 @@ class Assembler(Encodings):
             print(line.replace("\t", ""))
         return line.split()
 
-    def process_orig(self, line):
-        self.orig = self.pc = int(
+    def process_origin(self, line):
+        self.origin = self.program_counter = int(
             "0" + line[1] if line[1].startswith("x") else line[1], 0
         )
         return Result.FOUND
@@ -53,19 +53,19 @@ class Assembler(Encodings):
                 fl |= self.CONDITION_FLAGS[f]
         return fl
 
-    def process_instr(self, words):
+    def process_instruction(self, words):
         instr_bin = 0
         if words[0].startswith("BR"):
             flags = self.process_br_instr(words)
             instr_bin |= flags
             words[0] = "BR"
         if words[0] in self.ALL_INSTRUCTIONS.keys():
-            found_instr = words[0]
-            instr_bin |= self.ALL_INSTRUCTIONS[found_instr]
-            args_bin = self.set_instr_args(words, found_instr)
+            instruction = words[0]
+            instr_bin |= self.ALL_INSTRUCTIONS[instruction]
+            args_bin = self.set_instr_args(words, instruction)
             instr_bin |= args_bin
             self.write_to_memory(instr_bin)
-            self.pc += 1
+            self.program_counter += 1
             return Result.FOUND
         else:
             return Result.NOT_FOUND
@@ -74,11 +74,11 @@ class Assembler(Encodings):
         label = words[0]
         # instr = words[1]
         if self.valid_label(label):
-            self.labels_def_address[label] = self.pc
+            self.labels_def_address[label] = self.program_counter
             # set_label_usage_address(label, state.labels_usage_address,
             #                   state.pc, imm_mask[instr], imm_bit_range[instr])
             words.pop(0)
-            return self.process_instr(words)
+            return self.process_instruction(words)
         else:
             raise ValueError(f"Invalid label: {label}")
 
@@ -96,30 +96,32 @@ class Assembler(Encodings):
             self.write_to_memory(imm_value)
         # TODO: To check if needed (also for .STRINGZ, .BLKW)
         elif self.valid_label(word):
-            self.set_label_usage_address(word, self.labels_usage_address, self.pc)
+            self.set_label_usage_address(
+                word, self.labels_usage_address, self.program_counter
+            )
         else:
             raise ValueError(f"Invalid label: {word}")
         if line[0] != ".FILL":
-            self.labels_def_address[line[0]] = self.pc
-        self.pc += 1
+            self.labels_def_address[line[0]] = self.program_counter
+        self.program_counter += 1
         return Result.FOUND
 
     def process_blkw(self, line):
         if line[0] != ".BLKW":
-            self.labels_def_address[line[0]] = self.pc
+            self.labels_def_address[line[0]] = self.program_counter
         word = line[line.index(".BLKW") + 1]
         if word.startswith("x") or word.startswith("#"):
             imm_value = self.get_immediate_value(word)
-            self.pc += imm_value
+            self.program_counter += imm_value
         else:
             raise ValueError(f"Invalid label: {word}")
         return Result.FOUND
 
     def process_stringz(self, line):
         if line[0] != ".STRINGZ":
-            self.labels_def_address[line[0]] = self.pc
+            self.labels_def_address[line[0]] = self.program_counter
         # TODO: handle exceptions (first and last ")
-        self.labels_def_address[line[0]] = self.pc
+        self.labels_def_address[line[0]] = self.program_counter
 
         line = " ".join(line)
         tmp = line.split('"')
@@ -128,13 +130,10 @@ class Assembler(Encodings):
         for char in string:
             ascii_code = ord(char)
             self.write_to_memory(ascii_code)
-            self.pc += 1
+            self.program_counter += 1
         self.write_to_memory(0)
-        self.pc += 1
+        self.program_counter += 1
         return Result.FOUND
-
-    def process_end(self, line):
-        return Result.BREAK
 
     @staticmethod
     def valid_label(word):
@@ -147,13 +146,17 @@ class Assembler(Encodings):
     def write_to_memory(self, value):
         if value < 0:
             value = (1 << 16) + value
-        self.memory[self.pc] = value
+        self.memory[self.program_counter] = value
 
     def set_label_usage_address(self, word, imm_mask=0xFFFF, imm_bit_range=16):
         if word in self.labels_usage_address:
-            self.labels_usage_address[word].append([self.pc, imm_mask, imm_bit_range])
+            self.labels_usage_address[word].append(
+                [self.program_counter, imm_mask, imm_bit_range]
+            )
         else:
-            self.labels_usage_address[word] = [[self.pc, imm_mask, imm_bit_range]]
+            self.labels_usage_address[word] = [
+                [self.program_counter, imm_mask, imm_bit_range]
+            ]
 
     def set_imm_mode(self, instruction):
         instruction |= 1 << 5
@@ -170,19 +173,22 @@ class Assembler(Encodings):
         rc += found_instr == "JSRR"
         for raw_arg in words[1:]:
             arg = raw_arg.strip(",")
-            if arg in self.regs:
-                tmp = self.regs[arg] << self.REGISTER_BIT_POSITION[rc]
+            if arg in self.registers:
+                tmp = self.registers[arg] << self.REGISTER_ROW_BIT_ORIGIN[rc]
                 r |= tmp
                 rc += 1
             elif arg.startswith("x") or arg.startswith("#"):
-                imm_value = self.get_immediate_value(arg, self.IMMEDIATE_MASK[found_instr])
+                imm_value = self.get_immediate_value(
+                    arg, self.IMMEDIATE_MASK[found_instr]
+                )
                 r |= imm_value
                 if found_instr == "AND" or found_instr == "ADD":
                     r = self.set_imm_mode(r)
             elif self.valid_label(arg):
                 self.set_label_usage_address(
-                    arg, self.IMMEDIATE_MASK[found_instr],
-                    self.IMMEDIATE_MODE_FLAG_POSITION[found_instr]
+                    arg,
+                    self.IMMEDIATE_MASK[found_instr],
+                    self.IMMEDIATE_MODE_FLAG_POSITION[found_instr],
                 )
             else:
                 raise ValueError("Invalid label: %r" % (arg))

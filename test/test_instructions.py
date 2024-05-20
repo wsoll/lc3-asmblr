@@ -8,10 +8,10 @@ class TestInstructions:
         words_2 = "HALT".split()
         words_3 = "FOO .FILL xFF".split()
 
-        result = assembler.process_instr(words_1)
+        result = assembler.process_instruction(words_1)
         assert result == Result.FOUND
 
-        result = assembler.process_instr(words_2)
+        result = assembler.process_instruction(words_2)
         assert result == Result.FOUND
 
         result = assembler.step(words_3)
@@ -20,7 +20,10 @@ class TestInstructions:
         assembler.link_labels_def_to_labels_usage()
 
         output = produce_output(
-            assembler.swap, assembler.memory, assembler.pc, assembler.orig
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
         )
         assert output.hex()[4:8] == hex_output_result
         assert output.hex()[8:12] == "f025"
@@ -29,33 +32,53 @@ class TestInstructions:
     def test_add_1(self):
         assembler = Assembler()
         words = "ADD R0, R1, R2".split()
-        result = assembler.process_instr(words)
+        result = assembler.process_instruction(words)
         assert result == Result.FOUND
-        output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
+        output = produce_output(
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
+        )
         assert output.hex()[4:8] == "1042"
 
     def test_add_2(self):
         assembler = Assembler()
         words = "ADD R0, R1, x5".split()
-        result = assembler.process_instr(words)
+        result = assembler.process_instruction(words)
         assert result == Result.FOUND
-        output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
+        output = produce_output(
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
+        )
         assert output.hex()[4:8] == "1065"
 
     def test_and_1(self):
         assembler = Assembler()
         words = "AND R3, R0, R2".split()
-        result = assembler.process_instr(words)
+        result = assembler.process_instruction(words)
         assert result == Result.FOUND
-        output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
+        output = produce_output(
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
+        )
         assert output.hex()[4:8] == "5602"
 
     def test_and_2(self):
         assembler = Assembler()
         words = "AND R3, R0, #14".split()
-        result = assembler.process_instr(words)
+        result = assembler.process_instruction(words)
         assert result == Result.FOUND
-        output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
+        output = produce_output(
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
+        )
         assert output.hex()[4:8] == "562e"
 
     def test_br_and_ret(self):
@@ -65,21 +88,26 @@ class TestInstructions:
         words_3 = "FOO AND R3, R0, #14".split()
         words_4 = "RET".split()
 
-        result = assembler.process_instr(words_1)
+        result = assembler.process_instruction(words_1)
         assert result == Result.FOUND
 
-        result = assembler.process_instr(words_2)
+        result = assembler.process_instruction(words_2)
         assert result == Result.FOUND
 
         result = assembler.process_label(words_3)
         assert result == Result.FOUND
 
-        result = assembler.process_instr(words_4)
+        result = assembler.process_instruction(words_4)
         assert result == Result.FOUND
 
         assembler.link_labels_def_to_labels_usage()
 
-        output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
+        output = produce_output(
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
+        )
         assert output.hex()[4:8] == "0a01"
         assert output.hex()[8:12] == "f025"
         assert output.hex()[12:16] == "562e"
@@ -89,10 +117,15 @@ class TestInstructions:
         assembler = Assembler()
         words_1 = "JMP R2".split()
 
-        result = assembler.process_instr(words_1)
+        result = assembler.process_instruction(words_1)
         assert result == Result.FOUND
 
-        output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
+        output = produce_output(
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
+        )
         assert output.hex()[4:8] == "c400"
 
     def test_jsr_and_ldr(self):
@@ -102,20 +135,25 @@ class TestInstructions:
         words_3 = "HALT".split()
         words_4 = "FOO LDR R4, R2, x5".split()
 
-        result = assembler.process_instr(words_1)
+        result = assembler.process_instruction(words_1)
         assert result == Result.FOUND
 
-        result = assembler.process_instr(words_2)
+        result = assembler.process_instruction(words_2)
         assert result == Result.FOUND
 
-        result = assembler.process_instr(words_3)
+        result = assembler.process_instruction(words_3)
         assert result == Result.FOUND
 
         result = assembler.process_label(words_4)
         assert result == Result.FOUND
 
         assembler.link_labels_def_to_labels_usage()
-        output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
+        output = produce_output(
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
+        )
 
         assert output.hex()[4:8] == "4802"
         assert output.hex()[8:12] == output.hex()[12:16] == "f025"
@@ -125,10 +163,15 @@ class TestInstructions:
         assembler = Assembler()
         words_1 = "JSRR R2".split()
 
-        result = assembler.process_instr(words_1)
+        result = assembler.process_instruction(words_1)
         assert result == Result.FOUND
 
-        output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
+        output = produce_output(
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
+        )
         assert output.hex()[4:8] == "2080"
 
     def test_ld(self):
@@ -143,10 +186,15 @@ class TestInstructions:
         assembler = Assembler()
         words_1 = "LDR R2, R1, #5".split()
 
-        result = assembler.process_instr(words_1)
+        result = assembler.process_instruction(words_1)
         assert result == Result.FOUND
 
-        output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
+        output = produce_output(
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
+        )
         assert output.hex()[4:8] == "6445"
 
     def test_lea(self):
@@ -157,10 +205,15 @@ class TestInstructions:
         assembler = Assembler()
         words_1 = "NOT R2, R1".split()
 
-        result = assembler.process_instr(words_1)
+        result = assembler.process_instruction(words_1)
         assert result == Result.FOUND
 
-        output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
+        output = produce_output(
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
+        )
         assert output.hex()[4:8] == "947f"
 
     def test_st(self):
@@ -175,60 +228,90 @@ class TestInstructions:
         assembler = Assembler()
         words_1 = "STR R2, R1, #5".split()
 
-        result = assembler.process_instr(words_1)
+        result = assembler.process_instruction(words_1)
         assert result == Result.FOUND
 
-        output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
+        output = produce_output(
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
+        )
         assert output.hex()[4:8] == "7445"
 
     def test_getc(self):
         assembler = Assembler()
         words_1 = "GETC".split()
 
-        result = assembler.process_instr(words_1)
+        result = assembler.process_instruction(words_1)
         assert result == Result.FOUND
 
-        output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
+        output = produce_output(
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
+        )
         assert output.hex()[4:8] == "f020"
 
     def test_out(self):
         assembler = Assembler()
         words_1 = "OUT".split()
 
-        result = assembler.process_instr(words_1)
+        result = assembler.process_instruction(words_1)
         assert result == Result.FOUND
 
-        output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
+        output = produce_output(
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
+        )
         assert output.hex()[4:8] == "f021"
 
     def test_puts(self):
         assembler = Assembler()
         words_1 = "PUTS".split()
 
-        result = assembler.process_instr(words_1)
+        result = assembler.process_instruction(words_1)
         assert result == Result.FOUND
 
-        output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
+        output = produce_output(
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
+        )
         assert output.hex()[4:8] == "f022"
 
     def test_in(self):
         assembler = Assembler()
         words_1 = "IN".split()
 
-        result = assembler.process_instr(words_1)
+        result = assembler.process_instruction(words_1)
         assert result == Result.FOUND
 
-        output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
+        output = produce_output(
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
+        )
         assert output.hex()[4:8] == "f023"
 
     def test_putsp(self):
         assembler = Assembler()
         words_1 = "PUTSP".split()
 
-        result = assembler.process_instr(words_1)
+        result = assembler.process_instruction(words_1)
         assert result == Result.FOUND
 
-        output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
+        output = produce_output(
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
+        )
         assert output.hex()[4:8] == "f024"
 
     def test_rti(self):

@@ -20,7 +20,6 @@ def save_to_file(output):
 
 
 def produce_output(swap, memory, pc, orig):
-    output = ""
     memory[pc] = orig
     if swap:
         memory.byteswap()
@@ -44,15 +43,13 @@ if __name__ == "__main__":
             continue
         elif result == Result.BREAK:
             break
-        result = assembler.process_instr(words)
+        result = assembler.process_instruction(words)
         if result == Result.FOUND:
             continue
         elif result == Result.NOT_FOUND:
             assembler.process_label(words)
     assembler.link_labels_def_to_labels_usage()
-    output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
+    output = produce_output(
+        assembler.swap, assembler.memory, assembler.program_counter, assembler.origin
+    )
     save_to_file(output)
-
-
-#    for m in range(state.orig, state.pc):
-#        print('x{0:04X}: {1:016b}'.format(m, state.memory[m]))

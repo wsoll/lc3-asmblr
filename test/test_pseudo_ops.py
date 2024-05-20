@@ -10,7 +10,10 @@ class TestPseudoOps:
         result = assembler.step(words)
         assert result is Result.FOUND
         output = produce_output(
-            assembler.swap, assembler.memory, assembler.pc, assembler.orig
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
         )
         assert output == b"\x30\x00"
 
@@ -19,9 +22,12 @@ class TestPseudoOps:
         words = ".FILL x5".split()
         result = assembler.step(words)
         assert result == Result.FOUND
-        assert assembler.pc == 0x0001
+        assert assembler.program_counter == 0x0001
         output = produce_output(
-            assembler.swap, assembler.memory, assembler.pc, assembler.orig
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
         )
         assert output == b"\x00\x00\x00\x05"
 
@@ -30,10 +36,13 @@ class TestPseudoOps:
         words = "N .FILL #5".split()
         result = assembler.step(words)
         assert result == Result.FOUND
-        assert assembler.pc == 0x0001
+        assert assembler.program_counter == 0x0001
         assert assembler.labels_def_address["N"] == 0x0
         output = produce_output(
-            assembler.swap, assembler.memory, assembler.pc, assembler.orig
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
         )
         assert output.hex() == "00000005"
 
@@ -44,15 +53,15 @@ class TestPseudoOps:
         words_3 = "ADD R0, R0, R1".split()
         words_4 = "N .FILL x5".split()
 
-        result = assembler.process_instr(words_1)
+        result = assembler.process_instruction(words_1)
         assert result == Result.FOUND
         label_usage_address = assembler.labels_usage_address["N"][0][0]
         assert label_usage_address == 0x0000
 
-        result = assembler.process_instr(words_2)
+        result = assembler.process_instruction(words_2)
         assert result == Result.FOUND
 
-        result = assembler.process_instr(words_3)
+        result = assembler.process_instruction(words_3)
         assert result == Result.FOUND
 
         result = assembler.step(words_4)
@@ -62,7 +71,10 @@ class TestPseudoOps:
 
         assembler.link_labels_def_to_labels_usage()
         output = produce_output(
-            assembler.swap, assembler.memory, assembler.pc, assembler.orig
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
         )
         assert output.hex()[4:8] == "2202"
 
@@ -73,7 +85,10 @@ class TestPseudoOps:
         assert result == Result.FOUND
 
         output = produce_output(
-            assembler.swap, assembler.memory, assembler.pc, assembler.orig
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
         )
         assert output.hex()[4:] == "00000000"
 
@@ -86,7 +101,10 @@ class TestPseudoOps:
         result = assembler.step(words)
         assert result == Result.FOUND
         output = produce_output(
-            assembler.swap, assembler.memory, assembler.pc, assembler.orig
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
         )
         assert output.hex()[4:] == "00530075006e0064006100790000"
 
@@ -97,7 +115,10 @@ class TestPseudoOps:
         assert result == Result.FOUND
         assert assembler.labels_def_address["N"] == 0x0000
         output = produce_output(
-            assembler.swap, assembler.memory, assembler.pc, assembler.orig
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
         )
         assert output.hex()[4:] == "00530075006e0064006100790000"
 
@@ -107,12 +128,12 @@ class TestPseudoOps:
         words_2 = "HALT".split()
         words_3 = 'N .STRINGZ "Sunday"'.split()
 
-        result = assembler.process_instr(words_1)
+        result = assembler.process_instruction(words_1)
         assert result == Result.FOUND
         label_usage_address = assembler.labels_usage_address["N"][0][0]
         assert label_usage_address == 0x0000
 
-        result = assembler.process_instr(words_2)
+        result = assembler.process_instruction(words_2)
         assert result == Result.FOUND
 
         result = assembler.step(words_3)
@@ -121,7 +142,10 @@ class TestPseudoOps:
         assembler.link_labels_def_to_labels_usage()
 
         output = produce_output(
-            assembler.swap, assembler.memory, assembler.pc, assembler.orig
+            assembler.swap,
+            assembler.memory,
+            assembler.program_counter,
+            assembler.origin,
         )
         assert output.hex()[4:8] == "e601"
 
