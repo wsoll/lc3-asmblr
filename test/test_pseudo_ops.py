@@ -1,6 +1,5 @@
-from gbl_const import Result
 from run import produce_output
-from assembler import Assembler
+from assembler import Assembler, Result
 
 
 class TestPseudoOps:

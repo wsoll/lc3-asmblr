@@ -1,7 +1,6 @@
 import os
 
-from assembler import Assembler
-from gbl_const import Result
+from assembler import Assembler, Result
 
 
 def load_file():

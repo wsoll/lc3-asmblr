@@ -1,7 +1,7 @@
 from array import array
+from enum import Enum
 
 from encoding import Encodings
-from gbl_const import Result
 
 
 class Assembler(Encodings):
@@ -188,3 +188,8 @@ class Assembler(Encodings):
                 raise ValueError("Invalid label: %r" % (arg))
         return r
 
+
+class Result(Enum):
+    NOT_FOUND = 0
+    FOUND = 1
+    BREAK = 2
