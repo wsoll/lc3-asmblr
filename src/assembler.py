@@ -43,6 +43,33 @@ class Assembler(Encodings):
         )
         return Result.FOUND
 
+    def process_br_instr(self, words):
+        fl = 0
+        if all(c in self.CONDITION_FLAGS for c in words[0][2:].lower()):
+            fl = 0
+            if words[0] == "BR":
+                words[0] = "BRnzp"
+            for f in words[0][2:].lower():
+                fl |= self.CONDITION_FLAGS[f]
+        return fl
+
+    def process_instr(self, words):
+        instr_bin = 0
+        if words[0].startswith("BR"):
+            flags = self.process_br_instr(words)
+            instr_bin |= flags
+            words[0] = "BR"
+        if words[0] in self.ALL_INSTRUCTIONS.keys():
+            found_instr = words[0]
+            instr_bin |= self.ALL_INSTRUCTIONS[found_instr]
+            args_bin = self.set_instr_args(words, found_instr)
+            instr_bin |= args_bin
+            self.write_to_memory(instr_bin)
+            self.pc += 1
+            return Result.FOUND
+        else:
+            return Result.NOT_FOUND
+
     def process_fill(self, line):
         word = line[line.index(".FILL") + 1]
         # TODO: handle exceptions
@@ -120,13 +147,13 @@ class Assembler(Encodings):
         elif word.startswith("#"):
             return int(word.strip("#"), 0) & mask
 
-    def set_instr_args(self, words, regs, found_instr):
+    def set_instr_args(self, words, found_instr):
         r = rc = 0
         rc += found_instr == "JSRR"
         for raw_arg in words[1:]:
             arg = raw_arg.strip(",")
-            if arg in regs:
-                tmp = regs[arg] << self.REGISTER_BIT_POSITION[rc]
+            if arg in self.regs:
+                tmp = self.regs[arg] << self.REGISTER_BIT_POSITION[rc]
                 r |= tmp
                 rc += 1
             elif arg.startswith("x") or arg.startswith("#"):

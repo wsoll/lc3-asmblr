@@ -41,6 +41,8 @@ class Encodings:
         "PUTSP": (0b1111 << 12) + 0x24,
         "HALT": (0b1111 << 12) + 0x25,
     }
+    # ToDo: distinguish
+    ALL_INSTRUCTIONS = OP_CODE_ENCODING | TRAP_ROUTINES
     IMMEDIATE_MODE_FLAG_POSITION = {
         "ADD": 5,
         "AND": 5,

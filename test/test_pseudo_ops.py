@@ -1,4 +1,4 @@
-from asmblr import process_instr, link_labels_def_to_labels_usage
+from asmblr import link_labels_def_to_labels_usage
 from gbl_const import Result
 from run import produce_output
 from assembler import Assembler
@@ -46,15 +46,15 @@ class TestPseudoOps:
         words_3 = "ADD R0, R0, R1".split()
         words_4 = "N .FILL x5".split()
 
-        result = process_instr(words_1, assembler)
+        result = assembler.process_instr(words_1)
         assert result == Result.FOUND
         label_usage_address = assembler.labels_usage_address["N"][0][0]
         assert label_usage_address == 0x0000
 
-        result = process_instr(words_2, assembler)
+        result = assembler.process_instr(words_2)
         assert result == Result.FOUND
 
-        result = process_instr(words_3, assembler)
+        result = assembler.process_instr(words_3)
         assert result == Result.FOUND
 
         result = assembler.step(words_4)
@@ -113,12 +113,12 @@ class TestPseudoOps:
         words_2 = "HALT".split()
         words_3 = 'N .STRINGZ "Sunday"'.split()
 
-        result = process_instr(words_1, assembler)
+        result = assembler.process_instr(words_1)
         assert result == Result.FOUND
         label_usage_address = assembler.labels_usage_address["N"][0][0]
         assert label_usage_address == 0x0000
 
-        result = process_instr(words_2, assembler)
+        result = assembler.process_instr(words_2)
         assert result == Result.FOUND
 
         result = assembler.step(words_3)

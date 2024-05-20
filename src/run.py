@@ -1,7 +1,6 @@
 import os
 
 from asmblr import (
-    process_instr,
     process_label,
     link_labels_def_to_labels_usage,
 )
@@ -37,28 +36,28 @@ def produce_output(swap, memory, pc, orig):
 
 if __name__ == "__main__":
     asm_code = load_file()
-    state = Assembler()
-    state.verbose = input("Verbose Y/n? ").lower() != "n"
+    assembler = Assembler()
+    assembler.verbose = input("Verbose Y/n? ").lower() != "n"
 
     for line in asm_code.splitlines():
-        words = state.prepare_keywords(line)
+        words = assembler.prepare_keywords(line)
         if not words:
             continue
 
-        result = state.step(words)
+        result = assembler.step(words)
         if result == Result.FOUND:
             continue
         elif result == Result.BREAK:
             break
-        result = process_instr(words, state)
+        result = assembler.process_instr(words)
         if result == Result.FOUND:
             continue
         elif result == Result.NOT_FOUND:
-            process_label(words, state)
+            process_label(words, assembler)
     link_labels_def_to_labels_usage(
-        state.labels_usage_address, state.labels_def_address, state.memory
+        assembler.labels_usage_address, assembler.labels_def_address, assembler.memory
     )
-    output = produce_output(state.swap, state.memory, state.pc, state.orig)
+    output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
     save_to_file(output)
 
 
