@@ -3,7 +3,6 @@ from asmblr_tools import (
     valid_label,
     set_instr_args,
 )
-from assembler import Assembler
 from gbl_const import (
     instrs_keys,
     instrs_bin,
@@ -35,21 +34,6 @@ def process_br_instr(words, state):
         for f in words[0][2:].lower():
             fl |= flags[f]
     return fl
-
-
-def process_pseudo_ops(words, assmbler: Assembler):
-    if ".ORIG" in words:
-        return assmbler.process_orig(words)
-    elif ".FILL" in words:
-        return assmbler.process_fill(words)
-    elif ".BLKW" in words:
-        return assmbler.process_blkw(words)
-    elif ".STRINGZ" in words:
-        return assmbler.process_stringz(words)
-    elif ".END" in words:
-        return Result.BREAK
-    else:
-        return Result.NOT_FOUND
 
 
 def process_instr(words, state):

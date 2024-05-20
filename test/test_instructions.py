@@ -1,6 +1,5 @@
 from asmblr import (
     process_instr,
-    process_pseudo_ops,
     link_labels_def_to_labels_usage,
     process_label,
 )
@@ -11,26 +10,28 @@ from assembler import Assembler
 
 class TestInstructions:
     def work_with_label(self, words_1, hex_output_result):
-        state = Assembler()
+        assembler = Assembler()
         words_2 = "HALT".split()
         words_3 = "FOO .FILL xFF".split()
 
-        result = process_instr(words_1, state)
+        result = process_instr(words_1, assembler)
         assert result == Result.FOUND
 
-        result = process_instr(words_2, state)
+        result = process_instr(words_2, assembler)
         assert result == Result.FOUND
 
-        result = process_pseudo_ops(words_3, state)
+        result = assembler.step(words_3)
         assert result == Result.FOUND
 
         link_labels_def_to_labels_usage(
-            state.labels_usage_address,
-            state.labels_def_address,
-            state.memory,
+            assembler.labels_usage_address,
+            assembler.labels_def_address,
+            assembler.memory,
         )
 
-        output = produce_output(state.swap, state.memory, state.pc, state.orig)
+        output = produce_output(
+            assembler.swap, assembler.memory, assembler.pc, assembler.orig
+        )
         assert output.hex()[4:8] == hex_output_result
         assert output.hex()[8:12] == "f025"
         assert output.hex()[12:16] == "00ff"

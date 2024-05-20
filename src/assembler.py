@@ -18,13 +18,14 @@ class Assembler(Buffer, Encodings):
             ".FILL": self.process_fill,
             ".BLKW": self.process_blkw,
             ".STRINGZ": self.process_stringz,
+            ".END": self.process_end,
         }
 
-    def step(self, line):
-        line_keywords = self.prepare_keywords(line)
+    def step(self, line_keywords):
         for key, method in self.__pseudo_ops_mapping.items():
             if key in line_keywords:
-                method(line_keywords)
+                return method(line_keywords)
+        return Result.NOT_FOUND
 
     def prepare_keywords(self, line):
         line = line.split(";")[0]
@@ -82,3 +83,6 @@ class Assembler(Buffer, Encodings):
         self.write_to_memory(0)
         self.pc += 1
         return Result.FOUND
+
+    def process_end(self, line):
+        return Result.BREAK

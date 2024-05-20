@@ -1,7 +1,6 @@
 import os
 
 from asmblr import (
-    process_pseudo_ops,
     process_instr,
     process_label,
     link_labels_def_to_labels_usage,
@@ -42,13 +41,11 @@ if __name__ == "__main__":
     state.verbose = input("Verbose Y/n? ").lower() != "n"
 
     for line in asm_code.splitlines():
-        orig_line, line = line, line.split(";")[0]
-        if state.verbose:
-            print(line.replace("\t", ""))
-        words = line.split()
+        words = state.prepare_keywords(line)
         if not words:
             continue
-        result = process_pseudo_ops(words, state)
+
+        result = state.step(words)
         if result == Result.FOUND:
             continue
         elif result == Result.BREAK:
