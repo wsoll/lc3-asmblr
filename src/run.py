@@ -28,17 +28,21 @@ def produce_output(swap, memory, pc, orig):
     return output
 
 
-if __name__ == "__main__":
-    asm_code = load_file()
+def main(assembly):
     assembler = Assembler()
 
-    for line in asm_code.splitlines():
+    for line in assembly.splitlines():
         result = assembler.step(line)
         if not result:
             break
 
     assembler.link_labels_def_to_labels_usage()
-    output = produce_output(
+    return produce_output(
         assembler.swap, assembler.memory, assembler.program_counter, assembler.origin
     )
-    save_to_file(output)
+
+
+if __name__ == "__main__":
+    assembly = load_file()
+    result = main(assembly)
+    save_to_file(result)
