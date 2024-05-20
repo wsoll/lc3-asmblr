@@ -31,11 +31,12 @@ class Assembler(Encodings, Logger):
                 return method(line_keywords)
         return Result.NOT_FOUND
 
-    def prepare_keywords(self, line):
-        line = line.split(";")[0]
-        if self.verbose:
-            print(line.replace("\t", ""))
-        return line.split()
+    def prepare_keywords(self, line: str) -> list[str]:
+        line_without_comment = line.split(";")[0]
+        line_without_tabs = line_without_comment.replace("\t", "")
+        self._logger.debug(line_without_tabs)
+
+        return line_without_tabs.split()
 
     def process_origin(self, line):
         self.origin = self.program_counter = int(
