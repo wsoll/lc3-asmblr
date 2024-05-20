@@ -56,8 +56,7 @@ class Assembler(Encodings, Logger):
             self.process_label(line_keywords)
             return Result.FOUND
 
-        self._logger.error(f"Line[{self.line_counter}, unknown]: {line_keywords}")
-        return Result.BREAK  # ToDo: split to file validation first
+        raise SyntaxError(f"Line[{self.line_counter}, unknown]: {line_keywords}")
 
     def prepare_keywords(self, line: str) -> list[str]:
         line_without_comment = line.split(";")[0]
