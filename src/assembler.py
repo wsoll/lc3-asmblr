@@ -2,13 +2,13 @@ from array import array
 from enum import Enum
 
 from encoding import Encodings
+from logger import Logger
 
 
-class Assembler(Encodings):
-    def __init__(self):
-        super().__init__()
+class Assembler(Encodings, Logger):
+    def __init__(self, verbose=False):
+        super().__init__(verbose)
         self.origin = 0
-        self.verbose = True
         self.swap = True
 
         self.program_counter = 0

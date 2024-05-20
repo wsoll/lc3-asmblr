@@ -31,7 +31,6 @@ def produce_output(swap, memory, pc, orig):
 if __name__ == "__main__":
     asm_code = load_file()
     assembler = Assembler()
-    assembler.verbose = input("Verbose Y/n? ").lower() != "n"
 
     for line in asm_code.splitlines():
         words = assembler.prepare_keywords(line)
