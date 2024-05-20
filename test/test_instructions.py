@@ -1,4 +1,3 @@
-from asmblr import link_labels_def_to_labels_usage
 from gbl_const import Result
 from run import produce_output
 from assembler import Assembler
@@ -19,11 +18,7 @@ class TestInstructions:
         result = assembler.step(words_3)
         assert result == Result.FOUND
 
-        link_labels_def_to_labels_usage(
-            assembler.labels_usage_address,
-            assembler.labels_def_address,
-            assembler.memory,
-        )
+        assembler.link_labels_def_to_labels_usage()
 
         output = produce_output(
             assembler.swap, assembler.memory, assembler.pc, assembler.orig
@@ -83,11 +78,7 @@ class TestInstructions:
         result = assembler.process_instr(words_4)
         assert result == Result.FOUND
 
-        link_labels_def_to_labels_usage(
-            assembler.labels_usage_address,
-            assembler.labels_def_address,
-            assembler.memory,
-        )
+        assembler.link_labels_def_to_labels_usage()
 
         output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
         assert output.hex()[4:8] == "0a01"
@@ -124,11 +115,7 @@ class TestInstructions:
         result = assembler.process_label(words_4)
         assert result == Result.FOUND
 
-        link_labels_def_to_labels_usage(
-            assembler.labels_usage_address,
-            assembler.labels_def_address,
-            assembler.memory,
-        )
+        assembler.link_labels_def_to_labels_usage()
         output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
 
         assert output.hex()[4:8] == "4802"

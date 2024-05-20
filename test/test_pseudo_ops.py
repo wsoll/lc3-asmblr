@@ -1,4 +1,3 @@
-from asmblr import link_labels_def_to_labels_usage
 from gbl_const import Result
 from run import produce_output
 from assembler import Assembler
@@ -62,11 +61,7 @@ class TestPseudoOps:
         label_def = assembler.memory[assembler.labels_def_address["N"]]
         assert label_def == 0x5
 
-        link_labels_def_to_labels_usage(
-            assembler.labels_usage_address,
-            assembler.labels_def_address,
-            assembler.memory,
-        )
+        assembler.link_labels_def_to_labels_usage()
         output = produce_output(
             assembler.swap, assembler.memory, assembler.pc, assembler.orig
         )
@@ -124,11 +119,7 @@ class TestPseudoOps:
         result = assembler.step(words_3)
         assert result == Result.FOUND
 
-        link_labels_def_to_labels_usage(
-            assembler.labels_usage_address,
-            assembler.labels_def_address,
-            assembler.memory,
-        )
+        assembler.link_labels_def_to_labels_usage()
 
         output = produce_output(
             assembler.swap, assembler.memory, assembler.pc, assembler.orig

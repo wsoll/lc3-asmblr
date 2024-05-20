@@ -82,6 +82,12 @@ class Assembler(Encodings):
         else:
             raise ValueError(f"Invalid label: {label}")
 
+    def link_labels_def_to_labels_usage(self):
+        for label, usages in self.labels_usage_address.items():
+            for ref, mask, bit in usages:
+                current = self.labels_def_address[label] - ref - 1
+                self.memory[ref] |= mask & current
+
     def process_fill(self, line):
         word = line[line.index(".FILL") + 1]
         # TODO: handle exceptions

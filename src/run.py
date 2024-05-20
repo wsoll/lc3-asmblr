@@ -1,7 +1,5 @@
 import os
 
-from asmblr import link_labels_def_to_labels_usage
-
 from assembler import Assembler
 from gbl_const import Result
 
@@ -52,9 +50,7 @@ if __name__ == "__main__":
             continue
         elif result == Result.NOT_FOUND:
             assembler.process_label(words)
-    link_labels_def_to_labels_usage(
-        assembler.labels_usage_address, assembler.labels_def_address, assembler.memory
-    )
+    assembler.link_labels_def_to_labels_usage()
     output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
     save_to_file(output)
 
