@@ -1,15 +1,19 @@
-from buffer import Buffer
+from array import array
+
 from encoding import Encodings
 from gbl_const import Result
 
 
-class Assembler(Buffer, Encodings):
+class Assembler(Encodings):
     def __init__(self):
         super().__init__()
         self.orig = 0
         self.verbose = True
         self.swap = True
 
+        self.pc = 0
+        self.memory = array("H", [0] * (1 << 16))
+        self.labels_usage_address = dict()
         self.labels_def_address = dict()
         self.regs = dict(("R%1i" % r, r) for r in range(8))
 
@@ -86,3 +90,56 @@ class Assembler(Buffer, Encodings):
 
     def process_end(self, line):
         return Result.BREAK
+
+    @staticmethod
+    def valid_label(word):
+        return all(c.isalpha() or c.isdigit() or c == "_" for c in word)
+
+    @staticmethod
+    def get_mem_str(loc, memory):
+        return "x{0:04X}: {1:016b}".format(loc, memory[loc])
+
+    def write_to_memory(self, value):
+        if value < 0:
+            value = (1 << 16) + value
+        self.memory[self.pc] = value
+
+    def set_label_usage_address(self, word, imm_mask=0xFFFF, imm_bit_range=16):
+        if word in self.labels_usage_address:
+            self.labels_usage_address[word].append([self.pc, imm_mask, imm_bit_range])
+        else:
+            self.labels_usage_address[word] = [[self.pc, imm_mask, imm_bit_range]]
+
+    def set_imm_mode(self, instruction):
+        instruction |= 1 << 5
+        return instruction
+
+    def get_immediate_value(self, word, mask=0xFFFF):
+        if word.startswith("x"):
+            return int("0" + word, 0) & mask
+        elif word.startswith("#"):
+            return int(word.strip("#"), 0) & mask
+
+    def set_instr_args(self, words, regs, found_instr):
+        r = rc = 0
+        rc += found_instr == "JSRR"
+        for raw_arg in words[1:]:
+            arg = raw_arg.strip(",")
+            if arg in regs:
+                tmp = regs[arg] << self.REGISTER_BIT_POSITION[rc]
+                r |= tmp
+                rc += 1
+            elif arg.startswith("x") or arg.startswith("#"):
+                imm_value = self.get_immediate_value(arg, self.IMMEDIATE_MASK[found_instr])
+                r |= imm_value
+                if found_instr == "AND" or found_instr == "ADD":
+                    r = self.set_imm_mode(r)
+            elif self.valid_label(arg):
+                self.set_label_usage_address(
+                    arg, self.IMMEDIATE_MASK[found_instr],
+                    self.IMMEDIATE_MODE_FLAG_POSITION[found_instr]
+                )
+            else:
+                raise ValueError("Invalid label: %r" % (arg))
+        return r
+
