@@ -1,13 +1,6 @@
 import os
 
-from asmblr import (
-    process_pseudo_ops,
-    process_instr,
-    process_label,
-    link_labels_def_to_labels_usage,
-)
-from state import State
-from gbl_const import Result
+from assembler import Assembler, Result
 
 
 def load_file():
@@ -38,30 +31,26 @@ def produce_output(swap, memory, pc, orig):
 
 if __name__ == "__main__":
     asm_code = load_file()
-    state = State()
-    state.verbose = input("Verbose Y/n? ").lower() != "n"
+    assembler = Assembler()
+    assembler.verbose = input("Verbose Y/n? ").lower() != "n"
 
     for line in asm_code.splitlines():
-        orig_line, line = line, line.split(";")[0]
-        if state.verbose:
-            print(line.replace("\t", ""))
-        words = line.split()
+        words = assembler.prepare_keywords(line)
         if not words:
             continue
-        result = process_pseudo_ops(words, state)
+
+        result = assembler.step(words)
         if result == Result.FOUND:
             continue
         elif result == Result.BREAK:
             break
-        result = process_instr(words, state)
+        result = assembler.process_instr(words)
         if result == Result.FOUND:
             continue
         elif result == Result.NOT_FOUND:
-            process_label(words, state)
-    link_labels_def_to_labels_usage(
-        state.labels_usage_address, state.labels_def_address, state.memory
-    )
-    output = produce_output(state.swap, state.memory, state.pc, state.orig)
+            assembler.process_label(words)
+    assembler.link_labels_def_to_labels_usage()
+    output = produce_output(assembler.swap, assembler.memory, assembler.pc, assembler.orig)
     save_to_file(output)
 
 
