@@ -1,6 +1,6 @@
 import os
 
-from assembler import Assembler, Result
+from assembler import Assembler
 
 
 def load_file():
@@ -33,20 +33,10 @@ if __name__ == "__main__":
     assembler = Assembler()
 
     for line in asm_code.splitlines():
-        words = assembler.prepare_keywords(line)
-        if not words:
-            continue
-
-        result = assembler.step(words)
-        if result == Result.FOUND:
-            continue
-        elif result == Result.BREAK:
+        result = assembler.step(line)
+        if not result:
             break
-        result = assembler.process_instruction(words)
-        if result == Result.FOUND:
-            continue
-        elif result == Result.NOT_FOUND:
-            assembler.process_label(words)
+
     assembler.link_labels_def_to_labels_usage()
     output = produce_output(
         assembler.swap, assembler.memory, assembler.program_counter, assembler.origin

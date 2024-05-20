@@ -10,6 +10,7 @@ class Assembler(Encodings, Logger):
         super().__init__(verbose)
         self.origin = 0
         self.swap = True
+        self.line_counter = -1
 
         self.program_counter = 0
         self.memory = array("H", [0] * (1 << 16))
@@ -25,11 +26,38 @@ class Assembler(Encodings, Logger):
             ".END": lambda x: Result.BREAK,
         }
 
-    def step(self, line_keywords):
+    def step(self, line: str):
+        self.line_counter += 1
+
+        line_keywords = self.prepare_keywords(line)
+
+        if not line_keywords:
+            self._logger.debug(f"Line[{self.line_counter}]: empty.")
+            return True
+
+        result = Result.NOT_FOUND
         for key, method in self.__directives_mapping.items():
             if key in line_keywords:
-                return method(line_keywords)
-        return Result.NOT_FOUND
+                result = method(line_keywords)
+                break
+
+        if result in (Result.FOUND, Result.BREAK):
+            self._logger.debug(f"Line[{self.line_counter}, directive]: {line_keywords}")
+            return result
+
+        result = self.process_instruction(line_keywords)
+        if result == Result.FOUND:
+            self._logger.debug(
+                f"Line[{self.line_counter}, instruction]: {line_keywords}"
+            )
+            return result
+        elif result == Result.NOT_FOUND:
+            self._logger.debug(f"Line[{self.line_counter}, label]: {line_keywords}")
+            self.process_label(line_keywords)
+            return Result.FOUND
+
+        self._logger.error(f"Line[{self.line_counter}, unknown]: {line_keywords}")
+        return Result.BREAK  # ToDo: split to file validation first
 
     def prepare_keywords(self, line: str) -> list[str]:
         line_without_comment = line.split(";")[0]

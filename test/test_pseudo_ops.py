@@ -6,7 +6,7 @@ class TestPseudoOps:
 
     def test_orig(self):
         assembler = Assembler()
-        words = ".ORIG x3000".split()
+        words = ".ORIG x3000"
         result = assembler.step(words)
         assert result is Result.FOUND
         output = produce_output(
@@ -19,7 +19,7 @@ class TestPseudoOps:
 
     def test_fill_1(self):
         assembler = Assembler()
-        words = ".FILL x5".split()
+        words = ".FILL x5"
         result = assembler.step(words)
         assert result == Result.FOUND
         assert assembler.program_counter == 0x0001
@@ -33,7 +33,7 @@ class TestPseudoOps:
 
     def test_fill_2_label(self):
         assembler = Assembler()
-        words = "N .FILL #5".split()
+        words = "N .FILL #5"
         result = assembler.step(words)
         assert result == Result.FOUND
         assert assembler.program_counter == 0x0001
@@ -51,7 +51,7 @@ class TestPseudoOps:
         words_1 = "LD R1, N".split()
         words_2 = "AND R0, R0, #0".split()
         words_3 = "ADD R0, R0, R1".split()
-        words_4 = "N .FILL x5".split()
+        words_4 = "N .FILL x5"
 
         result = assembler.process_instruction(words_1)
         assert result == Result.FOUND
@@ -80,7 +80,7 @@ class TestPseudoOps:
 
     def test_blkw_1(self):
         assembler = Assembler()
-        words = ".BLKW #2".split()
+        words = ".BLKW #2"
         result = assembler.step(words)
         assert result == Result.FOUND
 
@@ -97,7 +97,7 @@ class TestPseudoOps:
 
     def test_stringz_1(self):
         assembler = Assembler()
-        words = '.STRINGZ "Sunday"'.split()
+        words = '.STRINGZ "Sunday"'
         result = assembler.step(words)
         assert result == Result.FOUND
         output = produce_output(
@@ -110,7 +110,7 @@ class TestPseudoOps:
 
     def test_stringz_2_label(self):
         assembler = Assembler()
-        words = 'N .STRINGZ "Sunday"'.split()
+        words = 'N .STRINGZ "Sunday"'
         result = assembler.step(words)
         assert result == Result.FOUND
         assert assembler.labels_def_address["N"] == 0x0000
@@ -126,7 +126,7 @@ class TestPseudoOps:
         assembler = Assembler()
         words_1 = "LEA R3, N".split()
         words_2 = "HALT".split()
-        words_3 = 'N .STRINGZ "Sunday"'.split()
+        words_3 = 'N .STRINGZ "Sunday"'
 
         result = assembler.process_instruction(words_1)
         assert result == Result.FOUND

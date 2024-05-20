@@ -6,7 +6,7 @@ class TestInstructions:
     def work_with_label(self, words_1, hex_output_result):
         assembler = Assembler()
         words_2 = "HALT".split()
-        words_3 = "FOO .FILL xFF".split()
+        words_3 = "FOO .FILL xFF"
 
         result = assembler.process_instruction(words_1)
         assert result == Result.FOUND
