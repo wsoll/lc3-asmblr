@@ -17,7 +17,9 @@ class Assembler(Encodings, Logger):
         self.labels_def_address = dict()
         self.registers = dict(("R%1i" % r, r) for r in range(8))
 
-        self.__directives_mapping = {}
+        self.__directives_mapping = {
+            ".ORIG": self.process_origin,
+        }
 
     def read(self, line: str):
         self.line_counter += 1
@@ -39,6 +41,26 @@ class Assembler(Encodings, Logger):
         self._logger.debug(line_without_tabs)
 
         return line_without_tabs.split()
+
+    def process_origin(self, line: list[str]) -> None:
+        if self.line_counter != 0:
+            raise SyntaxError(".ORIG has to be placed before a main program.")
+
+        if line[0] != ".ORIG":
+            raise SyntaxError("Directive '.ORIG' has to be first argument in the line.")
+
+        try:
+            str_value = line[1]
+            value = (
+                int(str_value[1:], 16) if str_value.startswith("x") else int(str_value)
+            )
+        except ValueError:
+            raise ValueError(
+                f"Line[{self.line_counter}]: value for '.ORIG' directive has to be "
+                f"decimal or hexadecimal."
+            )
+
+        self.origin = self.program_counter = value
 
     def to_bytes(self) -> bytes:
         self.memory[self.program_counter] = self.origin
