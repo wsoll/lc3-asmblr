@@ -10,6 +10,7 @@ class Assembler(Encodings, Logger):
         self.origin = 0
         self.swap = True
         self.line_counter = -1
+        self.end_flag = False
 
         self.program_counter = 0
         self.memory = array("H", [0] * (1 << 16))
@@ -19,9 +20,12 @@ class Assembler(Encodings, Logger):
 
         self.__directives_mapping = {
             ".ORIG": self.process_origin,
+            ".END": self.process_end,
         }
 
     def read(self, line: str):
+        if self.end_flag:
+            raise IndexError("Main program is finished after '.END' directive.")
         self.line_counter += 1
 
         line_keywords = self.prepare_keywords(line)
@@ -78,6 +82,11 @@ class Assembler(Encodings, Logger):
             arg=line[1], allow_decimal=False, allow_binary=False
         )
         self.origin = self.program_counter = value
+
+    def process_end(self, line: list[str]):
+        if len(line) != 1:
+            raise SyntaxError("Directive '.END' does not accept arguments.")
+        self.end_flag = True
 
     def to_bytes(self) -> bytes:
         self.memory[self.program_counter] = self.origin

@@ -4,7 +4,6 @@ from assembler import Assembler
 
 
 class TestOrigin:
-
     @pytest.mark.parametrize("value", ["x3000"])
     def test_origin_with_proper_values(self, value):
         assembler = Assembler()
@@ -39,3 +38,21 @@ class TestOrigin:
         words = f".ORIG {value}"
         with pytest.raises(ValueError):
             assembler.read(words)
+
+class TestEnd:
+
+    @pytest.mark.parametrize("line", [".END x3000", "FOO .END"])
+    def test_inappropriate_end_syntax_raises(self, line):
+        assembler = Assembler()
+
+        with pytest.raises(SyntaxError):
+            assembler.read(line)
+
+    def test_instructions_after_end_raises(self):
+        assembler = Assembler()
+        line_1 = ".END"
+        line_2 = "SOME INSTRUCTION"
+        assembler.read(line_1)
+
+        with pytest.raises(IndexError):
+            assembler.read(line_2)
