@@ -1,8 +1,8 @@
 from array import array
 
+import syntax
 from encoding import Encodings
 from logger import Logger
-from utils import cast_value_argument, parse_assembly
 
 
 class Assembler(Encodings, Logger):
@@ -29,7 +29,7 @@ class Assembler(Encodings, Logger):
             raise IndexError("Main program is finished after '.END' directive.")
         self.line_counter += 1
 
-        line_keywords = parse_assembly(line)
+        line_keywords = syntax.parse_assembly(line)
 
         if not line_keywords:
             self._logger.debug(f"Line[{self.line_counter}]: empty.")
@@ -55,7 +55,7 @@ class Assembler(Encodings, Logger):
         if len(line) != 2:
             raise ValueError("Line with '.ORIG' has only one argument.")
 
-        value = cast_value_argument(
+        value = syntax.cast_value_argument(
             arg=line[1], allow_decimal=False, allow_binary=False
         )
         self.origin = self.program_counter = value
