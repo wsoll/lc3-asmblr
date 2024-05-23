@@ -39,8 +39,8 @@ class TestOrigin:
         with pytest.raises(ValueError):
             assembler.read(words)
 
-class TestEnd:
 
+class TestEnd:
     @pytest.mark.parametrize("line", [".END x3000", "FOO .END"])
     def test_inappropriate_end_syntax_raises(self, line):
         assembler = Assembler()
