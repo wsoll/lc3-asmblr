@@ -5,7 +5,7 @@ from assembler import Assembler
 
 class TestOrigin:
 
-    @pytest.mark.parametrize("value", ["x3000", "12288"])
+    @pytest.mark.parametrize("value", ["x3000"])
     def test_origin_with_proper_values(self, value):
         assembler = Assembler()
         words = f".ORIG {value}"
@@ -26,7 +26,7 @@ class TestOrigin:
         with pytest.raises(SyntaxError):
             assembler.read(line)
 
-    @pytest.mark.parametrize("value", ["abcd"])
+    @pytest.mark.parametrize("value", ["abcd", "#1234", "1234", "b01011"])
     def test_origin_inappropriate_value_raises(self, value):
         assembler = Assembler()
         words = f".ORIG {value}"

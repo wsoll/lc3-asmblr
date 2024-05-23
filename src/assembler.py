@@ -42,6 +42,28 @@ class Assembler(Encodings, Logger):
 
         return line_without_tabs.split()
 
+    def cast_value_argument(
+        self, arg: str, allow_decimal: bool = True, allow_binary: bool = True
+    ) -> int:
+        if arg.startswith("x"):
+            base = 16
+        elif allow_decimal and arg.startswith("#"):
+            base = 10
+        elif allow_binary and arg.startswith("b"):
+            base = 2
+        else:
+            raise ValueError(
+                "Every value argument has to be prefixed with 'x' for hexadecimal, '#' "
+                "for decimal and 'b' for binary values."
+            )
+
+        try:
+            value = int(arg[1:], base)
+            self._logger.debug(f"'{arg}' casted to: {value}")
+            return value
+        except ValueError as e:
+            raise ValueError(f"Inappropriate value: {arg} for base {base}.") from e
+
     def process_origin(self, line: list[str]) -> None:
         if self.line_counter != 0:
             raise SyntaxError(".ORIG has to be placed before a main program.")
@@ -52,17 +74,9 @@ class Assembler(Encodings, Logger):
         if len(line) != 2:
             raise ValueError("Line with '.ORIG' has only one argument.")
 
-        try:
-            str_value = line[1]
-            value = (
-                int(str_value[1:], 16) if str_value.startswith("x") else int(str_value)
-            )
-        except ValueError as e:
-            raise ValueError(
-                f"Line[{self.line_counter}]: value for '.ORIG' directive has to be "
-                f"decimal or hexadecimal."
-            ) from e
-
+        value = self.cast_value_argument(
+            arg=line[1], allow_decimal=False, allow_binary=False
+        )
         self.origin = self.program_counter = value
 
     def to_bytes(self) -> bytes:
