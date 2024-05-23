@@ -1,12 +1,6 @@
-import logging
-
-logger = logging.getLogger(__name__)
-
-
 def parse_assembly(line: str) -> list[str]:
     line_without_comment = line.split(";")[0]
     line_without_tabs = line_without_comment.replace("\t", "")
-    logger.debug(line_without_tabs)
 
     return line_without_tabs.split()
 
@@ -28,7 +22,6 @@ def cast_value_argument(
 
     try:
         value = int(arg[1:], base)
-        logger.debug(f"'{arg}' casted to: {value}")
         return value
     except ValueError as e:
         raise ValueError(f"Inappropriate value: {arg} for base {base}.") from e
