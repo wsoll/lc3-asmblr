@@ -49,16 +49,19 @@ class Assembler(Encodings, Logger):
         if line[0] != ".ORIG":
             raise SyntaxError("Directive '.ORIG' has to be first argument in the line.")
 
+        if len(line) != 2:
+            raise ValueError("Line with '.ORIG' has only one argument.")
+
         try:
             str_value = line[1]
             value = (
                 int(str_value[1:], 16) if str_value.startswith("x") else int(str_value)
             )
-        except ValueError:
+        except ValueError as e:
             raise ValueError(
                 f"Line[{self.line_counter}]: value for '.ORIG' directive has to be "
                 f"decimal or hexadecimal."
-            )
+            ) from e
 
         self.origin = self.program_counter = value
 
