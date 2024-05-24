@@ -1,4 +1,5 @@
 from array import array
+from copy import deepcopy
 
 import syntax
 from encoding import Encodings
@@ -65,9 +66,10 @@ class Assembler(Encodings, Logger):
         self.end_flag = True
 
     def to_bytes(self) -> bytes:
-        self.memory[self.program_counter] = self.origin
+        memory_deepcopy = deepcopy(self.memory)
+        memory_deepcopy[self.program_counter] = self.origin
         if self.swap:
-            self.memory.byteswap()
-        output = self.memory[self.program_counter : self.program_counter + 1].tobytes()
-        output += self.memory[self.origin : self.program_counter].tobytes()
+            memory_deepcopy.byteswap()
+        output = memory_deepcopy[self.program_counter : self.program_counter + 1].tobytes()
+        output += memory_deepcopy[self.origin : self.program_counter].tobytes()
         return output
