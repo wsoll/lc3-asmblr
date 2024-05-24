@@ -40,6 +40,15 @@ class TestOrigin:
             assembler.read(words)
 
 
+class TestFill:
+    @pytest.mark.parametrize("value", ["x0030", "b110000", "#48"])
+    def test_fill_with_value(self, value):
+        assembler = Assembler()
+        line = f".FILL {value}"
+        assembler.read(line)
+        assert assembler.to_bytes().hex() == b"\x30\x00\x00\x30".hex()
+
+
 class TestEnd:
     @pytest.mark.parametrize("line", [".END x3000", "FOO .END"])
     def test_inappropriate_end_syntax_raises(self, line):

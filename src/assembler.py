@@ -15,12 +15,13 @@ class Assembler(Encodings, Logger):
         self.end_flag = False
 
         self.memory = array("H", [0] * (1 << 16))
-        self.labels_usage_address = dict()
-        self.labels_def_address = dict()
-        self.registers = dict(("R%1i" % r, r) for r in range(8))
+        self.labels_usage_addresses = {}
+        self.labels_definition_addresses = {}
+        self.registers = {("R%1i" % r, r) for r in range(8)}
 
         self.__directives_mapping = {
             ".ORIG": self.process_origin,
+            ".FILL": self.process_fill,
             ".END": self.process_end,
         }
 
@@ -64,6 +65,38 @@ class Assembler(Encodings, Logger):
         if len(line) != 1:
             raise SyntaxError("Directive '.END' does not accept arguments.")
         self.end_flag = True
+
+    def process_fill(self, line: list[str]) -> None:
+        """Allocate one word, initialize with word.
+
+        line: syntax - label .FILL value
+            label: (Optional) A symbolic name for the memory location being defined.
+            .FILL: The directive keyword.
+            value: A 16-bit value to store in the allocated memory location. This
+                can be a literal number (in decimal, hexadecimal, or binary format)
+                or a symbolic constant.
+        """
+        try:
+            words_count = syntax.validate_fill_directive(line)
+        except (ValueError, SyntaxError) as e:
+            self._logger.error(e)
+            raise e
+
+        arg = line[words_count - 1]
+        if syntax.is_value(arg):
+            value = syntax.cast_value_argument(arg, True, True)
+            self.write_to_memory(value)
+        elif syntax.is_valid_label(arg):
+            raise NotImplementedError()
+        else:
+            msg = "Invalid '.FILL' argument."
+            self._logger.error(msg)
+            raise SyntaxError(msg)
+
+        if words_count == 3:
+            raise NotImplementedError()
+
+        self.program_counter += 1
 
     def to_bytes(self) -> bytes:
         memory_deepcopy = deepcopy(self.memory)

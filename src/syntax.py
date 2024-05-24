@@ -29,3 +29,26 @@ def cast_value_argument(
 
 def is_valid_label(label: str) -> bool:
     return all(c.isalpha() or c.isdigit() or c == "_" for c in label)
+
+
+def is_value(arg: str) -> bool:
+    return (
+        True
+        if arg.startswith("x") or arg.startswith("#") or arg.startswith("b")
+        else False
+    )
+
+
+def validate_fill_directive(line: list[str]) -> int:
+    if len(line) == 2:
+        if line[0] != ".FILL":
+            raise SyntaxError("'.FILL' has to be first argument in the line.")
+        return 2
+    elif len(line) == 3:
+        if line[1] != ".FILL":
+            raise SyntaxError("'.FILL' has to be second argument in the line.")
+        if not is_valid_label(line[0]):
+            raise ValueError(f"Invalid label for .FILL directive: {line[0]}")
+        return 3
+    else:
+        raise SyntaxError("'.FILL' has only one argument and label optionally")
