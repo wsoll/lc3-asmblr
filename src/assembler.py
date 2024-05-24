@@ -8,12 +8,11 @@ from logger import Logger
 class Assembler(Encodings, Logger):
     def __init__(self, verbose=False):
         super().__init__(verbose)
-        self.origin = 0
+        self.origin = self.program_counter = 0x3000
         self.swap = True
         self.line_counter = -1
         self.end_flag = False
 
-        self.program_counter = 0
         self.memory = array("H", [0] * (1 << 16))
         self.labels_usage_address = dict()
         self.labels_def_address = dict()

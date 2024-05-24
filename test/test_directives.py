@@ -4,13 +4,13 @@ from assembler import Assembler
 
 
 class TestOrigin:
-    @pytest.mark.parametrize("value", ["x3000"])
+    @pytest.mark.parametrize("value", ["x3001"])
     def test_origin_with_proper_values(self, value):
         assembler = Assembler()
         words = f".ORIG {value}"
         assembler.read(words)
 
-        assert assembler.to_bytes() == b"\x30\x00"
+        assert assembler.to_bytes().hex() == b"\x30\x01".hex()
 
     def test_origin_not_before_main_program_raises(self):
         assembler = Assembler()
