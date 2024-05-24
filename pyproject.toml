@@ -2,7 +2,11 @@
 exclude = 'venv'
 python_version = 3.11
 mypy_path = "src"
-explicit_package_bases = "True"
+explicit_package_bases = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
 
 [tool.flake8]
 max-line-length = 88

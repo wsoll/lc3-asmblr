@@ -7,7 +7,7 @@ from logger import Logger
 
 
 class Assembler(Encodings, Logger):
-    def __init__(self, verbose=False):
+    def __init__(self, verbose: bool = False):
         super().__init__(verbose)
         self.origin = self.program_counter = 0x3000
         self.swap = True
@@ -15,8 +15,8 @@ class Assembler(Encodings, Logger):
         self.end_flag = False
 
         self.memory = array("H", [0] * (1 << 16))
-        self.labels_usage_addresses = {}
-        self.labels_definition_addresses = {}
+        self.labels_usage_addresses: dict[str, int] = {}
+        self.labels_definition_addresses: dict[str, int] = {}
         self.registers = {("R%1i" % r, r) for r in range(8)}
 
         self.__directives_mapping = {
@@ -25,7 +25,7 @@ class Assembler(Encodings, Logger):
             ".END": self.process_end,
         }
 
-    def read(self, line: str):
+    def read(self, line: str) -> None:
         if self.end_flag:
             raise IndexError("Main program is finished after '.END' directive.")
         self.line_counter += 1
@@ -34,7 +34,7 @@ class Assembler(Encodings, Logger):
 
         if not line_keywords:
             self._logger.debug(f"Line[{self.line_counter}]: empty.")
-            return True
+            return
 
         for key, method in self.__directives_mapping.items():
             if key in line_keywords:
@@ -61,7 +61,7 @@ class Assembler(Encodings, Logger):
         )
         self.origin = self.program_counter = value
 
-    def process_end(self, line: list[str]):
+    def process_end(self, line: list[str]) -> None:
         if len(line) != 1:
             raise SyntaxError("Directive '.END' does not accept arguments.")
         self.end_flag = True
@@ -103,6 +103,8 @@ class Assembler(Encodings, Logger):
         memory_deepcopy[self.program_counter] = self.origin
         if self.swap:
             memory_deepcopy.byteswap()
-        output = memory_deepcopy[self.program_counter : self.program_counter + 1].tobytes()
+        output = memory_deepcopy[
+            self.program_counter : self.program_counter + 1
+        ].tobytes()
         output += memory_deepcopy[self.origin : self.program_counter].tobytes()
         return output

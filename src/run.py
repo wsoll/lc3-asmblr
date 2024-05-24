@@ -1,16 +1,18 @@
+from typing import Generator
+
 from assembler import Assembler
 
 
-def load_assembly(filepath):
+def load_assembly(filepath: str) -> Generator[str, None, None]:
     with open(filepath, "r") as file:
         for line in file:
             yield line
 
 
-def main(filepath):
+def main(filepath: str) -> None:
     assembler = Assembler()
 
-    for line in load_assembly("..."):
+    for line in load_assembly(filepath):
         assembler.read(line)
 
     assembler.to_bytes()
