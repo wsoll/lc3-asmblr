@@ -60,7 +60,7 @@ def validate_directive(line: list[str], directive_key: Directive) -> int:
                 f"'{directive_key}' has to be second argument in the line."
             )
         if not is_valid_label(line[0]):
-            raise ValueError(f"Invalid label for {directive_key} directive: {line[0]}")
+            raise TypeError(f"Invalid label for {directive_key} directive: {line[0]}")
         return 3
     else:
         raise SyntaxError(f"{directive_key} has only one argument and label optionally")

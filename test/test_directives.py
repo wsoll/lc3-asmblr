@@ -3,6 +3,40 @@ import pytest
 from assembler import Assembler
 
 
+class TestDirective:
+
+    @pytest.mark.parametrize("directive_key", [".ORIG", ".FILL", ".BLKW"])
+    def test_directive_not_first_argument_raises(self, directive_key):
+        assembler = Assembler()
+        line = f"x3001 {directive_key}"
+        with pytest.raises(SyntaxError):
+            assembler.read(line)
+
+    @pytest.mark.parametrize(
+        "word",
+        [
+            "x3001 .ORIG",
+            "#50 .FILL",
+            ".FILL #50 FOO",
+            "#50 .BLKW",
+            ".BLKW #50 FOO",
+            ".END x3000",
+            "FOO .END",
+        ],
+    )
+    def test_wrong_order_raises(self, word):
+        assembler = Assembler()
+        with pytest.raises(SyntaxError):
+            assembler.read(word)
+
+    @pytest.mark.parametrize("directive_key", [".FILL", ".BLKW"])
+    def test_invalid_label_raises(self, directive_key):
+        assembler = Assembler()
+        with pytest.raises(TypeError):
+            word = f"#50 {directive_key} FOO"
+            assembler.read(word)
+
+
 class TestOrigin:
     @pytest.mark.parametrize("value", ["x3001"])
     def test_origin_with_proper_values(self, value):
@@ -18,12 +52,6 @@ class TestOrigin:
         line_2 = ".ORIG x3000"
         with pytest.raises(SyntaxError):
             assembler.read(line_2)
-
-    def test_origin_not_first_argument_raises(self):
-        assembler = Assembler()
-        line = "x3000 .ORIG"
-        with pytest.raises(SyntaxError):
-            assembler.read(line)
 
     @pytest.mark.parametrize("value", ["abcd", "#1234", "1234", "b01011"])
     def test_origin_inappropriate_value_raises(self, value):
@@ -50,7 +78,6 @@ class TestFill:
 
 
 class TestBlockOfWords:
-
     @pytest.mark.parametrize("n", ["#1", "#3", "#15"])
     def test_blkw_with_value(self, n):
         assembler = Assembler()
@@ -65,13 +92,6 @@ class TestBlockOfWords:
 
 
 class TestEnd:
-    @pytest.mark.parametrize("line", [".END x3000", "FOO .END"])
-    def test_inappropriate_end_syntax_raises(self, line):
-        assembler = Assembler()
-
-        with pytest.raises(SyntaxError):
-            assembler.read(line)
-
     def test_instructions_after_end_raises(self):
         assembler = Assembler()
         line_1 = ".END"
