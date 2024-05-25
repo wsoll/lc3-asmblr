@@ -22,6 +22,7 @@ class Assembler(Encodings, Logger):
         self.__directives_mapping = {
             ".ORIG": self.process_origin,
             ".FILL": self.process_fill,
+            ".BLKW": self.process_block_of_words,
             ".END": self.process_end,
         }
 
@@ -66,25 +67,35 @@ class Assembler(Encodings, Logger):
             raise SyntaxError("Directive '.END' does not accept arguments.")
         self.end_flag = True
 
+    def process_directive(
+        self, line: list[str], directive_key: syntax.Directive
+    ) -> int:
+        try:
+            words_count = syntax.validate_directive(line, directive_key)
+        except (ValueError, SyntaxError) as e:
+            self._logger.error(e)
+            raise e
+
+        if words_count == 3:
+            raise NotImplementedError("Processing label is not yet implemented.")
+
+        return words_count
+
     def process_fill(self, line: list[str]) -> None:
         """Allocate one word, initialize with word.
 
-        line: syntax - label .FILL value
+        syntax: label .FILL value
             label: (Optional) A symbolic name for the memory location being defined.
             .FILL: The directive keyword.
             value: A 16-bit value to store in the allocated memory location. This
                 can be a literal number (in decimal, hexadecimal, or binary format)
                 or a symbolic constant.
         """
-        try:
-            words_count = syntax.validate_fill_directive(line)
-        except (ValueError, SyntaxError) as e:
-            self._logger.error(e)
-            raise e
+        words_count = self.process_directive(line, ".FILL")
 
-        arg = line[words_count - 1]
+        arg = line[words_count - 1]  # ToDo-1: remove duplication if pattern
         if syntax.is_value(arg):
-            value = syntax.cast_value_argument(arg, True, True)
+            value = syntax.cast_value_argument(arg)
             self.write_to_memory(value)
         elif syntax.is_valid_label(arg):
             raise NotImplementedError()
@@ -93,10 +104,31 @@ class Assembler(Encodings, Logger):
             self._logger.error(msg)
             raise SyntaxError(msg)
 
-        if words_count == 3:
-            raise NotImplementedError()
-
         self.program_counter += 1
+
+    def process_block_of_words(self, line: list[str]) -> None:
+        """Allocate multiple words of storage, value unspecified.
+
+        syntax: label .BLKW n
+            label: (Optional) A symbolic name for the memory location being defined.
+            .BLKW : The directive keyword.
+            n: number of words to allocate.
+        """
+
+        words_count = self.process_directive(line, ".BLKW")
+
+        arg = line[words_count - 1]  # ToDo: (ToDo-1 reference)
+        if syntax.is_value(arg):
+            words_to_allocate = syntax.cast_value_argument(
+                arg, allow_hexadecimal=False, allow_binary=False
+            )
+            self.program_counter += words_to_allocate
+        elif syntax.is_valid_label(arg):
+            raise NotImplementedError()
+        else:
+            msg = "Invalid '.BLKW' argument."
+            self._logger.error(msg)
+            raise SyntaxError(msg)
 
     def to_bytes(self) -> bytes:
         memory_deepcopy = deepcopy(self.memory)

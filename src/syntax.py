@@ -1,3 +1,8 @@
+from typing import Literal
+
+Directive = Literal[".FILL", ".BLKW"]
+
+
 def parse_assembly(line: str) -> list[str]:
     line_without_comment = line.split(";")[0]
     line_without_tabs = line_without_comment.replace("\t", "")
@@ -6,9 +11,12 @@ def parse_assembly(line: str) -> list[str]:
 
 
 def cast_value_argument(
-    arg: str, allow_decimal: bool = True, allow_binary: bool = True
+    arg: str,
+    allow_hexadecimal: bool = True,
+    allow_decimal: bool = True,
+    allow_binary: bool = True,
 ) -> int:
-    if arg.startswith("x"):
+    if allow_hexadecimal and arg.startswith("x"):
         base = 16
     elif allow_decimal and arg.startswith("#"):
         base = 10
@@ -39,16 +47,20 @@ def is_value(arg: str) -> bool:
     )
 
 
-def validate_fill_directive(line: list[str]) -> int:
+def validate_directive(line: list[str], directive_key: Directive) -> int:
     if len(line) == 2:
-        if line[0] != ".FILL":
-            raise SyntaxError("'.FILL' has to be first argument in the line.")
+        if line[0] != directive_key:
+            raise SyntaxError(
+                f"'{directive_key}' has to be first argument in the line."
+            )
         return 2
     elif len(line) == 3:
-        if line[1] != ".FILL":
-            raise SyntaxError("'.FILL' has to be second argument in the line.")
+        if line[1] != directive_key:
+            raise SyntaxError(
+                f"'{directive_key}' has to be second argument in the line."
+            )
         if not is_valid_label(line[0]):
-            raise ValueError(f"Invalid label for .FILL directive: {line[0]}")
+            raise ValueError(f"Invalid label for {directive_key} directive: {line[0]}")
         return 3
     else:
-        raise SyntaxError("'.FILL' has only one argument and label optionally")
+        raise SyntaxError(f"{directive_key} has only one argument and label optionally")

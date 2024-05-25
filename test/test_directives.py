@@ -49,6 +49,21 @@ class TestFill:
         assert assembler.to_bytes().hex() == b"\x30\x00\x00\x30".hex()
 
 
+class TestBlockOfWords:
+
+    @pytest.mark.parametrize("n", ["#1", "#3", "#15"])
+    def test_blkw_with_value(self, n):
+        assembler = Assembler()
+        line = f".BLKW {n}"
+        empty_words_count = int(n[1:]) * 2  # every word has 2 bytes
+        origin_and_empty_words = bytearray(2 + empty_words_count)
+        origin_and_empty_words[0] = 0x30
+
+        assembler.read(line)
+
+        assert assembler.to_bytes().hex() == origin_and_empty_words.hex()
+
+
 class TestEnd:
     @pytest.mark.parametrize("line", [".END x3000", "FOO .END"])
     def test_inappropriate_end_syntax_raises(self, line):
