@@ -1,13 +1,15 @@
+import re
 from typing import Literal
 
-Directive = Literal[".FILL", ".BLKW"]
+Directive = Literal[".FILL", ".BLKW", ".STRINGZ"]
 
 
 def parse_assembly(line: str) -> list[str]:
     line_without_comment = line.split(";")[0]
     line_without_tabs = line_without_comment.replace("\t", "")
 
-    return line_without_tabs.split()
+    whitespace_split_exclude_double_quoted = r'\s+(?=(?:[^"]*"[^"]*")*[^"]*$)'
+    return re.split(whitespace_split_exclude_double_quoted, line_without_tabs)
 
 
 def cast_value_argument(

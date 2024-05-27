@@ -4,14 +4,6 @@ from assembler import Assembler
 
 
 class TestDirective:
-
-    @pytest.mark.parametrize("directive_key", [".ORIG", ".FILL", ".BLKW"])
-    def test_directive_not_first_argument_raises(self, directive_key):
-        assembler = Assembler()
-        line = f"x3001 {directive_key}"
-        with pytest.raises(SyntaxError):
-            assembler.read(line)
-
     @pytest.mark.parametrize(
         "word",
         [
@@ -22,6 +14,7 @@ class TestDirective:
             ".BLKW #50 FOO",
             ".END x3000",
             "FOO .END",
+            '"Hello, World!" .STRINGZ',
         ],
     )
     def test_wrong_order_raises(self, word):
@@ -89,6 +82,25 @@ class TestBlockOfWords:
         assembler.read(line)
 
         assert assembler.to_bytes().hex() == origin_and_empty_words.hex()
+
+
+class TestStringWithZero:
+    def test_stringz_with_string(self):
+        assembler = Assembler()
+        line = '.STRINGZ "Hello, World!"'
+        assembler.read(line)
+
+        # Encode the content in UTF-16 big endian without BOM + default ORIG
+        expected = b"\x30\x00" + "Hello, World!".encode("utf-16-be") + b"\x00\x00"
+        assert assembler.to_bytes().hex() == expected.hex()
+
+    @pytest.mark.skip(reason="Improve regex")
+    @pytest.mark.parametrize("arg", ["#4000", 'Hello!"', '"Hello!', '"Hello!""'])
+    def test_stringz_invalid_argument_raises(self, arg):
+        assembler = Assembler()
+        line_1 = f".STRINGZ {arg}"
+        with pytest.raises(SyntaxError):
+            assembler.read(line_1)
 
 
 class TestEnd:

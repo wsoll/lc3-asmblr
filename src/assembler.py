@@ -7,13 +7,18 @@ from logger import Logger
 
 
 class Assembler(Encodings, Logger):
-    def __init__(self, verbose: bool = False):
+    def __init__(self, big_endian: bool = True, verbose: bool = False):
+        """
+        Args:
+            big_endian: b"\x50\x43" in Big-Endian: 0x5043, Little-endian: 0x4350
+        """
         super().__init__(verbose)
         self.origin = self.program_counter = 0x3000
-        self.swap = True
+        self.big_endian = big_endian
         self.line_counter = -1
         self.end_flag = False
 
+        # ToDo-3: May be connected with line_counter
         self.memory = array("H", [0] * (1 << 16))
         self.labels_usage_addresses: dict[str, int] = {}
         self.labels_definition_addresses: dict[str, int] = {}
@@ -23,6 +28,7 @@ class Assembler(Encodings, Logger):
             ".ORIG": self.process_origin,
             ".FILL": self.process_fill,
             ".BLKW": self.process_block_of_words,
+            ".STRINGZ": self.process_string_with_zero,
             ".END": self.process_end,
         }
 
@@ -130,10 +136,29 @@ class Assembler(Encodings, Logger):
             self._logger.error(msg)
             raise SyntaxError(msg)
 
+    def process_string_with_zero(self, line: list[str]) -> None:
+        words_count = self.process_directive(line, ".STRINGZ")
+
+        arg = line[words_count - 1]
+        if arg[0] == '"' and arg[len(arg) - 1] == '"':
+            string = arg[1 : len(arg) - 1]
+
+            for char in string:
+                ascii_code = ord(char)
+                self.write_to_memory(ascii_code)
+                self.program_counter += 1
+
+            self.write_to_memory(0)
+            self.program_counter += 1
+        else:
+            msg = "Invalid '.STRINGZ' argument. It has to be between double quotes."
+            self._logger.error(msg)
+            raise SyntaxError(msg)
+
     def to_bytes(self) -> bytes:
         memory_deepcopy = deepcopy(self.memory)
         memory_deepcopy[self.program_counter] = self.origin
-        if self.swap:
+        if self.big_endian:
             memory_deepcopy.byteswap()
         output = memory_deepcopy[
             self.program_counter : self.program_counter + 1
