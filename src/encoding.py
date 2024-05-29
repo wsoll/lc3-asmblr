@@ -1,37 +1,38 @@
 class Encodings:
-    """To compose 16 bit row instruction.
+    """To compose 16 bit words.
 
     Attributes:
         REGISTER_ROW_BIT_ORIGIN: 3 bit addresses registers (R1-R7) first bit position.
         CONDITION_FLAGS: To indicate the sign of the previous calculation.
-        OPERATION_ENCODING: To identify specific instruction. It could have immediate
-            variant identified by immediate flag positioned
-        IMMEDIATE_MODE_FLAG_POSITION: To identify immediate mode for specific OP CODE
-        IMMEDIATE_MASK: To identify immediate mode for OP CODEs
+        DIRECTIVE_CODES: Set of assembler 'pseudo operations' which generate a piece of
+            code or data (like macros).
+        OPERATION_ENCODING: Encoding for tasks representation that the CPU knows how
+            to process.
+        IMMEDIATE_MODE_FLAG_POSITION: To identify immediate mode for specific OP CODE.
+        IMMEDIATE_MASK: To identify immediate mode for OP CODEs.
 
     """
 
     REGISTER_ROW_BIT_ORIGIN = [9, 6, 0]
     CONDITION_FLAGS = {"n": 1 << 11, "z": 1 << 10, "p": 1 << 9}
+    DIRECTIVE_CODES = (".ORIG", ".FILL", ".BLKW", ".STRINGZ", ".END")
     OPERATION_ENCODING = {
-        "ADD": 0b1 << 12,
-        "AND": 0b0101 << 12,
-        "BR": 0b0,
-        "JMP": 0b1100 << 12,
-        "JMPT": (0b1100000 << 9) + 1,
-        "JSR": 0b01001 << 11,
-        "JSRR": 0b010000 << 9,
-        "LD": 0b0010 << 12,
-        "LDI": 0b1010 << 12,
-        "LDR": 0b0110 << 12,
-        "LEA": 0b1110 << 12,
-        "NOT": (0b1001 << 12) + 0b111111,
-        "RET": 0b1100000111000000,
-        "RTI": 0b1000 << 12,
-        "RTT": 0b1100000111000001,
-        "ST": 0b0011 << 12,
-        "STI": 0b1011 << 12,
-        "STR": 0b0111 << 12,
+        "ADD": 0b1 << 12,  # add
+        "AND": 0b0101 << 12,  # bitwise and
+        "BR": 0b0,  # branch
+        "JMP": 0b1100 << 12,  # jump
+        "JSR": 0b01001 << 11,  # jump to register by label
+        "JSRR": 0b010000 << 9,  # jump to register by base register
+        "LD": 0b0010 << 12,  # load
+        "LDI": 0b1010 << 12,  # load indirect
+        "LDR": 0b0110 << 12,  # load register
+        "LEA": 0b1110 << 12,  # load effective address
+        "NOT": (0b1001 << 12) + 0b111111,  # bitwise not
+        "RET": 0b1100000111000000,  # return / jump
+        "RTI": 0b1000 << 12,  # unused
+        "ST": 0b0011 << 12,  # store
+        "STI": 0b1011 << 12,  # store indirect
+        "STR": 0b0111 << 12,  # store register
     }
     TRAP_ROUTINES = {
         "GETC": (0b1111 << 12) + 0x20,
@@ -41,8 +42,6 @@ class Encodings:
         "PUTSP": (0b1111 << 12) + 0x24,
         "HALT": (0b1111 << 12) + 0x25,
     }
-    # ToDo: distinguish
-    ALL_INSTRUCTIONS = OPERATION_ENCODING | TRAP_ROUTINES
     IMMEDIATE_MODE_FLAG_POSITION = {
         "ADD": 5,
         "AND": 5,

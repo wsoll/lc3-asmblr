@@ -13,7 +13,7 @@ def main(filepath: str) -> None:
     assembler = Assembler()
 
     for line in load_assembly(filepath):
-        assembler.read(line)
+        assembler.read_assembly(line)
 
     assembler.to_bytes()
     # ToDo: Save to file

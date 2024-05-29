@@ -20,14 +20,14 @@ class TestDirective:
     def test_wrong_order_raises(self, word):
         assembler = Assembler()
         with pytest.raises(SyntaxError):
-            assembler.read(word)
+            assembler.read_assembly(word)
 
     @pytest.mark.parametrize("directive_key", [".FILL", ".BLKW"])
     def test_invalid_label_raises(self, directive_key):
         assembler = Assembler()
         with pytest.raises(TypeError):
             word = f"#50 {directive_key} FOO"
-            assembler.read(word)
+            assembler.read_assembly(word)
 
 
 class TestOrigin:
@@ -35,7 +35,7 @@ class TestOrigin:
     def test_origin_with_proper_values(self, value):
         assembler = Assembler()
         words = f".ORIG {value}"
-        assembler.read(words)
+        assembler.read_assembly(words)
 
         assert assembler.to_bytes().hex() == b"\x30\x01".hex()
 
@@ -44,21 +44,21 @@ class TestOrigin:
         assembler.line_counter += 1
         line_2 = ".ORIG x3000"
         with pytest.raises(SyntaxError):
-            assembler.read(line_2)
+            assembler.read_assembly(line_2)
 
     @pytest.mark.parametrize("value", ["abcd", "#1234", "1234", "b01011"])
     def test_origin_inappropriate_value_raises(self, value):
         assembler = Assembler()
         words = f".ORIG {value}"
         with pytest.raises(ValueError):
-            assembler.read(words)
+            assembler.read_assembly(words)
 
     @pytest.mark.parametrize("value", ["", "x3000 x5000"])
     def test_origin_not_one_argument_raises(self, value):
         assembler = Assembler()
         words = f".ORIG {value}"
         with pytest.raises(ValueError):
-            assembler.read(words)
+            assembler.read_assembly(words)
 
 
 class TestFill:
@@ -66,7 +66,7 @@ class TestFill:
     def test_fill_with_value(self, value):
         assembler = Assembler()
         line = f".FILL {value}"
-        assembler.read(line)
+        assembler.read_assembly(line)
         assert assembler.to_bytes().hex() == b"\x30\x00\x00\x30".hex()
 
 
@@ -79,7 +79,7 @@ class TestBlockOfWords:
         origin_and_empty_words = bytearray(2 + empty_words_count)
         origin_and_empty_words[0] = 0x30
 
-        assembler.read(line)
+        assembler.read_assembly(line)
 
         assert assembler.to_bytes().hex() == origin_and_empty_words.hex()
 
@@ -88,7 +88,7 @@ class TestStringWithZero:
     def test_stringz_with_string(self):
         assembler = Assembler()
         line = '.STRINGZ "Hello, World!"'
-        assembler.read(line)
+        assembler.read_assembly(line)
 
         # Encode the content in UTF-16 big endian without BOM + default ORIG
         expected = b"\x30\x00" + "Hello, World!".encode("utf-16-be") + b"\x00\x00"
@@ -100,7 +100,7 @@ class TestStringWithZero:
         assembler = Assembler()
         line_1 = f".STRINGZ {arg}"
         with pytest.raises(SyntaxError):
-            assembler.read(line_1)
+            assembler.read_assembly(line_1)
 
 
 class TestEnd:
@@ -108,7 +108,7 @@ class TestEnd:
         assembler = Assembler()
         line_1 = ".END"
         line_2 = "SOME INSTRUCTION"
-        assembler.read(line_1)
+        assembler.read_assembly(line_1)
 
         with pytest.raises(IndexError):
-            assembler.read(line_2)
+            assembler.read_assembly(line_2)
