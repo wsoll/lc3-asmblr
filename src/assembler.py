@@ -147,7 +147,7 @@ class Assembler(Encodings, Logger):
 
         arg = instruction[arg_count.value - 1]
         if arg.startswith('"') and arg.endswith('"'):
-            string = arg[1 : -1]
+            string = arg[1:-1]
 
             for char in string:
                 self.write_to_memory(ord(char))

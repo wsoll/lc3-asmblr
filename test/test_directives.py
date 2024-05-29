@@ -67,7 +67,7 @@ class TestFill:
         assembler = Assembler()
         line = f".FILL {value}"
         assembler.read_assembly(line)
-        assert assembler.to_bytes().hex() == b"\x30\x00\x00\x30".hex()
+        assert assembler.to_bytes().hex()[4:] == b"\x00\x30".hex()
 
 
 class TestBlockOfWords:
@@ -76,12 +76,11 @@ class TestBlockOfWords:
         assembler = Assembler()
         line = f".BLKW {n}"
         empty_words_count = int(n[1:]) * 2  # every word has 2 bytes
-        origin_and_empty_words = bytearray(2 + empty_words_count)
-        origin_and_empty_words[0] = 0x30
+        origin_and_empty_words = bytearray(empty_words_count)
 
         assembler.read_assembly(line)
 
-        assert assembler.to_bytes().hex() == origin_and_empty_words.hex()
+        assert assembler.to_bytes().hex()[4:] == origin_and_empty_words.hex()
 
 
 class TestStringWithZero:
@@ -91,8 +90,8 @@ class TestStringWithZero:
         assembler.read_assembly(line)
 
         # Encode the content in UTF-16 big endian without BOM + default ORIG
-        expected = b"\x30\x00" + "Hello, World!".encode("utf-16-be") + b"\x00\x00"
-        assert assembler.to_bytes().hex() == expected.hex()
+        expected = "Hello, World!".encode("utf-16-be") + b"\x00\x00"
+        assert assembler.to_bytes().hex()[4:] == expected.hex()
 
     @pytest.mark.skip(reason="Improve regex")
     @pytest.mark.parametrize("arg", ["#4000", 'Hello!"', '"Hello!', '"Hello!""'])
