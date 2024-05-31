@@ -2,20 +2,27 @@ class Encodings:
     """To compose 16 bit words.
 
     Attributes:
-        REGISTER_ROW_BIT_ORIGIN: 3 bit addresses registers (R1-R7) first bit position.
+        REGISTER_OPERANDS_POSITION: first bit position in word for 3 bits register id.
+            Operations could have from 0 to 3 registers operands defined in a word
+            following the declaration pattern - first on 11,10,9 bit, second on
+            8,7,6 bit, third 2,1,0.
         CONDITION_FLAGS: To indicate the sign of the previous calculation.
         DIRECTIVE_CODES: Set of assembler 'pseudo operations' which generate a piece of
             code or data (like macros).
         OPERATION_ENCODING: Encoding for tasks representation that the CPU knows how
             to process.
-        IMMEDIATE_MODE_FLAG_POSITION: To identify immediate mode for specific OP CODE.
+        OPERATION_IMMEDIATE_VALUE_FLAG_POSITION: Flag position defining mode in word for
+            operations having immediate value operand option.
         IMMEDIATE_MASK: To identify immediate mode for OP CODEs.
 
     """
 
-    REGISTER_ROW_BIT_ORIGIN = [9, 6, 0]
+    REGISTER_OPERANDS_POSITION = [9, 6, 0]
     CONDITION_FLAGS = {"n": 1 << 11, "z": 1 << 10, "p": 1 << 9}
     DIRECTIVE_CODES = (".ORIG", ".FILL", ".BLKW", ".STRINGZ", ".END")
+    REGISTERS_ENCODING = {
+        f"R{r}": r for r in range(8)
+    }  # literals R0-R7 with encodings from 0b000 to 0b111
     OPERATION_ENCODING = {
         "ADD": 0b1 << 12,  # add
         "AND": 0b0101 << 12,  # bitwise and
@@ -42,7 +49,7 @@ class Encodings:
         "PUTSP": (0b1111 << 12) + 0x24,
         "HALT": (0b1111 << 12) + 0x25,
     }
-    IMMEDIATE_MODE_FLAG_POSITION = {
+    OPERATION_IMMEDIATE_VALUE_FLAG_POSITION = {
         "ADD": 5,
         "AND": 5,
         "BR": 9,
@@ -58,5 +65,5 @@ class Encodings:
         "TRAP": 8,
     }
     IMMEDIATE_MASK = {}
-    for im in IMMEDIATE_MODE_FLAG_POSITION.keys():
-        IMMEDIATE_MASK[im] = (1 << IMMEDIATE_MODE_FLAG_POSITION[im]) - 1
+    for im in OPERATION_IMMEDIATE_VALUE_FLAG_POSITION.keys():
+        IMMEDIATE_MASK[im] = (1 << OPERATION_IMMEDIATE_VALUE_FLAG_POSITION[im]) - 1
