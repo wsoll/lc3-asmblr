@@ -4,3 +4,4 @@ __pycache__/
 *.obj
 *.pyc
 ex.asm
+.DS_Store
