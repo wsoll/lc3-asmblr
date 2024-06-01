@@ -54,7 +54,7 @@ class Assembler(Encodings, Logger):
 
         for operation_key in self.OPERATION_ENCODING.keys():
             if operation_key in instruction:
-                # ToDo: process operation code
+                self.encode_instruction(instruction)
                 return
 
     def process_directive(self, instruction: list[str], code: str) -> None:
@@ -71,6 +71,44 @@ class Assembler(Encodings, Logger):
                 if len(instruction) != 1:
                     raise SyntaxError("Directive '.END' does not accept operands.")
                 self.end_flag = True
+
+    def encode_instruction(self, instruction: list[str]) -> None:
+        binary_representation = 0
+        # ToDo: process BR/BRANCH firsts.
+        # ToDo: With or Without label.
+
+        if (operation_code := instruction[0]) in self.OPERATION_ENCODING.keys():
+            binary_representation |= self.OPERATION_ENCODING[operation_code]
+            binary_representation |= self.get_operands_encoding(
+                instruction, operation_code
+            )
+            self.write_to_memory(binary_representation)
+            self.program_counter += 1
+        else:
+            ...
+
+    def get_operands_encoding(self, instruction: list[str], operation_code: str) -> int:
+        operands_encoding = 0
+        register_operand_counter = 0
+        # rc += found_instr == "JSRR"
+
+        operands_with_separator = instruction[1:]
+        operands = (operand.strip(",") for operand in operands_with_separator)
+
+        for operand in operands:
+            if operand in self.REGISTERS_ENCODING.keys():
+                operands_encoding |= (
+                    self.REGISTERS_ENCODING[operand]
+                    << self.REGISTER_OPERANDS_POSITION[register_operand_counter]
+                )
+                register_operand_counter += 1
+            elif is_numeral_base_prefixed(operand):
+                # immediate value
+                ...
+            elif is_valid_goto_label(operand):
+                raise NotImplementedError()
+
+        return operands_encoding
 
     def write_to_memory(self, value: int) -> None:
         if value < 0:
