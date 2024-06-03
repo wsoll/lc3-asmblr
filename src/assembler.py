@@ -77,16 +77,21 @@ class Assembler(Encodings, Logger):
         # ToDo: With or Without label.
         binary_representation = 0
         binary_representation |= self.OPERATION_ENCODING[operation_code]
+        binary_representation |= self.process_operands(operation_code, instruction)
+        self.write_to_memory(binary_representation)
+        self.program_counter += 1
 
+    def process_operands(self, operation_code: str, instruction: list[str]) -> int:
+        operands_binary_repr = 0
         match operation_code:
             case OpCode.ADD:
-                binary_representation |= self.get_operands_encoding(instruction)
+                operands_binary_repr |= self.get_operands_encoding(instruction)
             case OpCode.AND:
-                binary_representation |= self.get_operands_encoding(instruction)
+                operands_binary_repr |= self.get_operands_encoding(instruction)
             case OpCode.BR:
                 ...
             case OpCode.JMP:
-                binary_representation |= self.get_operands_encoding(instruction)
+                operands_binary_repr |= self.get_operands_encoding(instruction)
             case OpCode.JSR:
                 ...
             case OpCode.JSRR:
@@ -100,7 +105,7 @@ class Assembler(Encodings, Logger):
             case OpCode.LEA:
                 ...
             case OpCode.NOT:
-                binary_representation |= self.get_operands_encoding(instruction)
+                operands_binary_repr |= self.get_operands_encoding(instruction)
             case OpCode.RET:
                 ...
             case OpCode.RTI:
@@ -111,9 +116,7 @@ class Assembler(Encodings, Logger):
                 ...
             case OpCode.STR:
                 ...
-
-        self.write_to_memory(binary_representation)
-        self.program_counter += 1
+        return operands_binary_repr
 
     def get_operands_encoding(self, instruction: list[str]) -> int:
         operands_encoding = 0
