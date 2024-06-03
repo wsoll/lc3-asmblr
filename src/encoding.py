@@ -1,3 +1,30 @@
+class PseudoOpCode:
+    ORIG = ".ORIG"
+    FILL = ".FILL"
+    BLKW = ".BLKW"
+    STRINGZ = ".STRINGZ"
+    END = ".END"
+
+
+class OpCode:
+    ADD = "ADD"
+    AND = "AND"
+    BR = "BR"
+    JMP = "JMP"
+    JSR = "JSR"
+    JSRR = "JSRR"
+    LD = "LD"
+    LDI = "LDI"
+    LDR = "LDR"
+    LEA = "LEA"
+    NOT = "NOT"
+    RET = "RET"
+    RTI = "RTI"
+    ST = "ST"
+    STI = "STI"
+    STR = "STR"
+
+
 class Encodings:
     """To compose 16 bit words.
 
@@ -19,27 +46,33 @@ class Encodings:
 
     REGISTER_OPERANDS_POSITION = [9, 6, 0]
     CONDITION_FLAGS = {"n": 1 << 11, "z": 1 << 10, "p": 1 << 9}
-    DIRECTIVE_CODES = (".ORIG", ".FILL", ".BLKW", ".STRINGZ", ".END")
+    DIRECTIVE_CODES = (
+        PseudoOpCode.ORIG,
+        PseudoOpCode.FILL,
+        PseudoOpCode.BLKW,
+        PseudoOpCode.STRINGZ,
+        PseudoOpCode.END,
+    )
     REGISTERS_ENCODING = {
         f"R{r}": r for r in range(8)
     }  # literals R0-R7 with encodings from 0b000 to 0b111
     OPERATION_ENCODING = {
-        "ADD": 0b1 << 12,  # add
-        "AND": 0b0101 << 12,  # bitwise and
-        "BR": 0b0,  # branch
-        "JMP": 0b1100 << 12,  # jump
-        "JSR": 0b01001 << 11,  # jump to register by label
-        "JSRR": 0b010000 << 9,  # jump to register by base register
-        "LD": 0b0010 << 12,  # load
-        "LDI": 0b1010 << 12,  # load indirect
-        "LDR": 0b0110 << 12,  # load register
-        "LEA": 0b1110 << 12,  # load effective address
-        "NOT": (0b1001 << 12) + 0b111111,  # bitwise not
-        "RET": 0b1100000111000000,  # return / jump
-        "RTI": 0b1000 << 12,  # unused
-        "ST": 0b0011 << 12,  # store
-        "STI": 0b1011 << 12,  # store indirect
-        "STR": 0b0111 << 12,  # store register
+        OpCode.ADD: 0b1 << 12,  # add
+        OpCode.AND: 0b0101 << 12,  # bitwise and
+        OpCode.BR: 0b0,  # branch
+        OpCode.JMP: 0b1100 << 12,  # jump
+        OpCode.JSR: 0b01001 << 11,  # jump to register by label
+        OpCode.JSRR: 0b010000 << 9,  # jump to register by base register
+        OpCode.LD: 0b0010 << 12,  # load
+        OpCode.LDI: 0b1010 << 12,  # load indirect
+        OpCode.LDR: 0b0110 << 12,  # load register
+        OpCode.LEA: 0b1110 << 12,  # load effective address
+        OpCode.NOT: (0b1001 << 12) + 0b111111,  # bitwise not
+        OpCode.RET: 0b1100000111000000,  # return / jump
+        OpCode.RTI: 0b1000 << 12,  # unused
+        OpCode.ST: 0b0011 << 12,  # store
+        OpCode.STI: 0b1011 << 12,  # store indirect
+        OpCode.STR: 0b0111 << 12,  # store register
     }
     TRAP_ROUTINES = {
         "GETC": (0b1111 << 12) + 0x20,
