@@ -1,7 +1,7 @@
 from array import array
 from copy import deepcopy
 
-from encoding import Encodings
+from encoding import Encodings, OpCode, PseudoOpCode
 from logger import Logger
 from syntax import (
     parse_instruction,
@@ -54,40 +54,68 @@ class Assembler(Encodings, Logger):
 
         for operation_key in self.OPERATION_ENCODING.keys():
             if operation_key in instruction:
-                self.encode_instruction(instruction)
+                self.process_instruction(instruction, operation_key)
                 return
 
     def process_directive(self, instruction: list[str], code: str) -> None:
         match code:
-            case ".ORIG":
+            case PseudoOpCode.ORIG:
                 self.process_origin(instruction)
-            case ".FILL":
+            case PseudoOpCode.FILL:
                 self.process_fill(instruction)
-            case ".BLKW":
+            case PseudoOpCode.BLKW:
                 self.process_block_of_words(instruction)
-            case ".STRINGZ":
+            case PseudoOpCode.STRINGZ:
                 self.process_string_with_zero(instruction)
-            case ".END":
+            case PseudoOpCode.END:
                 if len(instruction) != 1:
                     raise SyntaxError("Directive '.END' does not accept operands.")
                 self.end_flag = True
 
-    def encode_instruction(self, instruction: list[str]) -> None:
-        binary_representation = 0
+    def process_instruction(self, instruction: list[str], operation_code: str) -> None:
         # ToDo: process BR/BRANCH firsts.
         # ToDo: With or Without label.
+        binary_representation = 0
+        binary_representation |= self.OPERATION_ENCODING[operation_code]
 
-        if (operation_code := instruction[0]) in self.OPERATION_ENCODING.keys():
-            binary_representation |= self.OPERATION_ENCODING[operation_code]
-            binary_representation |= self.get_operands_encoding(
-                instruction, operation_code
-            )
-            self.write_to_memory(binary_representation)
-            self.program_counter += 1
-        else:
-            ...
+        match operation_code:
+            case OpCode.ADD:
+                binary_representation |= self.get_operands_encoding(instruction)
+            case OpCode.AND:
+                binary_representation |= self.get_operands_encoding(instruction)
+            case OpCode.BR:
+                ...
+            case OpCode.JMP:
+                binary_representation |= self.get_operands_encoding(instruction)
+            case OpCode.JSR:
+                ...
+            case OpCode.JSRR:
+                ...
+            case OpCode.LD:
+                ...
+            case OpCode.LDI:
+                ...
+            case OpCode.LDR:
+                ...
+            case OpCode.LEA:
+                ...
+            case OpCode.NOT:
+                binary_representation |= self.get_operands_encoding(instruction)
+            case OpCode.RET:
+                ...
+            case OpCode.RTI:
+                ...
+            case OpCode.ST:
+                ...
+            case OpCode.STI:
+                ...
+            case OpCode.STR:
+                ...
 
-    def get_operands_encoding(self, instruction: list[str], operation_code: str) -> int:
+        self.write_to_memory(binary_representation)
+        self.program_counter += 1
+
+    def get_operands_encoding(self, instruction: list[str]) -> int:
         operands_encoding = 0
         register_operand_counter = 0
         # rc += found_instr == "JSRR"
@@ -103,7 +131,6 @@ class Assembler(Encodings, Logger):
                 )
                 register_operand_counter += 1
             elif is_numeral_base_prefixed(operand):
-                # immediate value
                 ...
             elif is_valid_goto_label(operand):
                 raise NotImplementedError()
