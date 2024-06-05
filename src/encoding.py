@@ -42,6 +42,7 @@ class Encoding:
         IMMEDIATE_MASK: To identify immediate mode for OP CODEs.
 
     """
+
     REGISTER_OPERANDS_POSITION = [9, 6, 0]
     CONDITION_FLAGS = {"n": 1 << 11, "z": 1 << 10, "p": 1 << 9}
     DIRECTIVE_CODES = (

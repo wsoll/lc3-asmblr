@@ -9,9 +9,9 @@ class TestOperations:
         "instruction, binary_encoding",
         [
             ("ADD R0, R1, R2", b"\x10\x42"),
-            # ("ADD R0, R1, x5", b"\x10\x65"),
+            ("ADD R0, R1, x5", b"\x10\x65"),
             ("AND R3, R0, R2", b"\x56\x02"),
-            # ("AND R3, R0, #14", b"\x56\x2E"),
+            ("AND R3, R0, #14", b"\x56\x2E"),
             ("JMP R2", b"\xC4\x00"),
             # ("JSRR R2", b"\x20\x80"),
             # ("LDR R2, R1, #5", b"\x64\x45"),

@@ -8,9 +8,9 @@ class InstructionSet:
         operands_binary_repr = 0x000
         match operation_code:
             case OpCode.ADD:
-                operands_binary_repr |= self.get_operands_encoding(operands)
+                operands_binary_repr |= self.get_add_and_operands_encoding(operands)
             case OpCode.AND:
-                operands_binary_repr |= self.get_operands_encoding(operands)
+                operands_binary_repr |= self.get_add_and_operands_encoding(operands)
             case OpCode.BR:
                 ...
             case OpCode.JMP:
@@ -58,3 +58,39 @@ class InstructionSet:
                 raise NotImplementedError()
 
         return operands_encoding
+
+    @staticmethod
+    def get_add_and_operands_encoding(operands: list[str]) -> int:
+        is_three_operands = True if len(operands) == 3 else False
+        is_first_operand_destination_register = (
+            True if operands[0] in Encoding.REGISTERS.keys() else False
+        )
+        is_second_operand_source_register = (
+            True if operands[1] in Encoding.REGISTERS.keys() else False
+        )
+        if (
+            not is_three_operands
+            or not is_first_operand_destination_register
+            or not is_second_operand_source_register
+        ):
+            raise SyntaxError("...")  # ToDo: with tests
+
+        first_operand_encoding = (
+            Encoding.REGISTERS[operands[0]] << Encoding.REGISTER_OPERANDS_POSITION[0]
+        )
+        second_operand_encoding = (
+            Encoding.REGISTERS[operands[1]] << Encoding.REGISTER_OPERANDS_POSITION[1]
+        )
+        if operands[2] in Encoding.REGISTERS.keys():
+            third_operand_encoding = (
+                Encoding.REGISTERS[operands[2]]
+                << Encoding.REGISTER_OPERANDS_POSITION[2]
+            )
+        elif is_numeral_base_prefixed(operands[2]):
+            third_operand_encoding = cast_to_numeral(operands[2]) | (
+                1 << Encoding.OPERATION_IMMEDIATE_VALUE_FLAG_POSITION[OpCode.ADD]
+            )
+        else:
+            raise SyntaxError("...")  # ToDo: with tests
+
+        return first_operand_encoding | second_operand_encoding | third_operand_encoding
