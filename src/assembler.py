@@ -1,7 +1,8 @@
 from array import array
 from copy import deepcopy
 
-from encoding import Encodings, OpCode, PseudoOpCode
+from encoding import PseudoOpCode, Encoding
+from instruction_set import InstructionSet
 from logger import Logger
 from syntax import (
     parse_instruction,
@@ -13,7 +14,7 @@ from syntax import (
 )
 
 
-class Assembler(Encodings, Logger):
+class Assembler(InstructionSet, Logger):
     """Encodes human-readable assembly file to LC3-readable binary file.
 
     Assembly file contains instructions (lines) that have both an operation code which
@@ -47,12 +48,12 @@ class Assembler(Encodings, Logger):
             self._logger.debug(f"Line[{self.line_counter}]: empty.")
             return
 
-        for directive_code in self.DIRECTIVE_CODES:
+        for directive_code in Encoding.DIRECTIVE_CODES:
             if directive_code in instruction:
                 self.process_directive(instruction, directive_code)
                 return
 
-        for operation_key in self.OPERATION_ENCODING.keys():
+        for operation_key in Encoding.OPERATION.keys():
             if operation_key in instruction:
                 self.process_instruction(instruction, operation_key)
                 return
@@ -75,70 +76,15 @@ class Assembler(Encodings, Logger):
     def process_instruction(self, instruction: list[str], operation_code: str) -> None:
         # ToDo: process BR/BRANCH firsts.
         # ToDo: With or Without label.
-        binary_representation = 0
-        binary_representation |= self.OPERATION_ENCODING[operation_code]
-        binary_representation |= self.process_operands(operation_code, instruction)
-        self.write_to_memory(binary_representation)
-        self.program_counter += 1
-
-    def process_operands(self, operation_code: str, instruction: list[str]) -> int:
-        operands_binary_repr = 0
-        match operation_code:
-            case OpCode.ADD:
-                operands_binary_repr |= self.get_operands_encoding(instruction)
-            case OpCode.AND:
-                operands_binary_repr |= self.get_operands_encoding(instruction)
-            case OpCode.BR:
-                ...
-            case OpCode.JMP:
-                operands_binary_repr |= self.get_operands_encoding(instruction)
-            case OpCode.JSR:
-                ...
-            case OpCode.JSRR:
-                ...
-            case OpCode.LD:
-                ...
-            case OpCode.LDI:
-                ...
-            case OpCode.LDR:
-                ...
-            case OpCode.LEA:
-                ...
-            case OpCode.NOT:
-                operands_binary_repr |= self.get_operands_encoding(instruction)
-            case OpCode.RET:
-                ...
-            case OpCode.RTI:
-                ...
-            case OpCode.ST:
-                ...
-            case OpCode.STI:
-                ...
-            case OpCode.STR:
-                ...
-        return operands_binary_repr
-
-    def get_operands_encoding(self, instruction: list[str]) -> int:
-        operands_encoding = 0
-        register_operand_counter = 0
-        # rc += found_instr == "JSRR"
+        binary_representation = 0x0000
+        binary_representation |= Encoding.OPERATION[operation_code]
 
         operands_with_separator = instruction[1:]
-        operands = (operand.strip(",") for operand in operands_with_separator)
+        operands = [operand.strip(",") for operand in operands_with_separator]
+        binary_representation |= self.process_operands(operation_code, operands)
 
-        for operand in operands:
-            if operand in self.REGISTERS_ENCODING.keys():
-                operands_encoding |= (
-                    self.REGISTERS_ENCODING[operand]
-                    << self.REGISTER_OPERANDS_POSITION[register_operand_counter]
-                )
-                register_operand_counter += 1
-            elif is_numeral_base_prefixed(operand):
-                ...
-            elif is_valid_goto_label(operand):
-                raise NotImplementedError()
-
-        return operands_encoding
+        self.write_to_memory(binary_representation)
+        self.program_counter += 1
 
     def write_to_memory(self, value: int) -> None:
         if value < 0:

@@ -25,7 +25,7 @@ class OpCode:
     STR = "STR"
 
 
-class Encodings:
+class Encoding:
     """To compose 16 bit words.
 
     Attributes:
@@ -36,14 +36,12 @@ class Encodings:
         CONDITION_FLAGS: To indicate the sign of the previous calculation.
         DIRECTIVE_CODES: Set of assembler 'pseudo operations' which generate a piece of
             code or data (like macros).
-        OPERATION_ENCODING: Encoding for tasks representation that the CPU knows how
-            to process.
+        OPERATION: Encoding for tasks representation that the CPU knows how to process.
         OPERATION_IMMEDIATE_VALUE_FLAG_POSITION: Flag position defining mode in word for
             operations having immediate value operand option.
         IMMEDIATE_MASK: To identify immediate mode for OP CODEs.
 
     """
-
     REGISTER_OPERANDS_POSITION = [9, 6, 0]
     CONDITION_FLAGS = {"n": 1 << 11, "z": 1 << 10, "p": 1 << 9}
     DIRECTIVE_CODES = (
@@ -53,10 +51,10 @@ class Encodings:
         PseudoOpCode.STRINGZ,
         PseudoOpCode.END,
     )
-    REGISTERS_ENCODING = {
+    REGISTERS = {
         f"R{r}": r for r in range(8)
     }  # literals R0-R7 with encodings from 0b000 to 0b111
-    OPERATION_ENCODING = {
+    OPERATION = {
         OpCode.ADD: 0b1 << 12,  # add
         OpCode.AND: 0b0101 << 12,  # bitwise and
         OpCode.BR: 0b0,  # branch
