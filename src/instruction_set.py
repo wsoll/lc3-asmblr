@@ -106,7 +106,9 @@ class InstructionSet:
     @staticmethod
     def get_jump_operand_encoding(operands: list[str]) -> int:
         is_single_operand = True if len(operands) == 1 else False
-        is_base_register_operand = True if operands[0] in Encoding.REGISTERS else False
+        is_base_register_operand = (
+            True if is_single_operand and operands[0] in Encoding.REGISTERS else False
+        )
 
         if not is_single_operand or not is_base_register_operand:
             raise SyntaxError(
