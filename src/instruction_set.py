@@ -1,5 +1,5 @@
 from encoding import OpCode, Encoding
-from syntax import is_numeral_base_prefixed, is_valid_goto_label, cast_to_numeral
+from syntax import is_numeral_base_prefixed, cast_to_numeral
 
 
 class InstructionSet:
@@ -40,33 +40,20 @@ class InstructionSet:
                 ...
             case OpCode.STR:
                 ...
-
-    def get_operands_encoding(self, operands: list[str]) -> int:
-        operands_encoding = 0
-        register_operand_counter = 0
-
-        for operand in operands:
-            if operand in Encoding.REGISTERS.keys():
-                operands_encoding |= (
-                    Encoding.REGISTERS[operand]
-                    << Encoding.REGISTER_OPERANDS_POSITION[register_operand_counter]
-                )
-                register_operand_counter += 1
-            elif is_numeral_base_prefixed(operand):
-                ...
-            elif is_valid_goto_label(operand):
-                raise NotImplementedError()
-
-        return operands_encoding
+        raise RuntimeError("Processing operands for unknown instruction.")
 
     @staticmethod
     def get_add_or_and_operands_encoding(operands: list[str]) -> int:
         is_three_operands = True if len(operands) == 3 else False
         is_first_operand_register = (
-            True if is_three_operands and operands[0] in Encoding.REGISTERS.keys() else False
+            True
+            if is_three_operands and operands[0] in Encoding.REGISTERS.keys()
+            else False
         )
         is_second_operand_register = (
-            True if is_three_operands and operands[1] in Encoding.REGISTERS.keys() else False
+            True
+            if is_three_operands and operands[1] in Encoding.REGISTERS.keys()
+            else False
         )
         if (
             not is_three_operands
@@ -120,3 +107,32 @@ class InstructionSet:
             Encoding.REGISTERS[operands[0]] << Encoding.BASE_REGISTER_POSITION
         )
         return base_operand_encoding
+
+    @staticmethod
+    def get_not_operand_encoding(operands: list[str]) -> int:
+        is_two_operands = True if len(operands) == 2 else False
+        is_first_operand_register = (
+            True if is_two_operands and operands[0] in Encoding.REGISTERS else False
+        )
+        is_second_operand_register = (
+            True if is_two_operands and operands[1] in Encoding.REGISTERS else False
+        )
+
+        if (
+            not is_two_operands
+            or not is_first_operand_register
+            or not is_second_operand_register
+        ):
+            raise SyntaxError(
+                f"Operands validation failure - Two operands: {is_two_operands}, "
+                f"First operand is register: {is_first_operand_register}, "
+                f"Second operand is register: {is_second_operand_register}"
+            )
+
+        first_operand_encoding = (
+            Encoding.REGISTERS[operands[0]] << Encoding.REGISTER_OPERANDS_POSITION[0]
+        )
+        second_operand_encoding = (
+            Encoding.REGISTERS[operands[1]] << Encoding.REGISTER_OPERANDS_POSITION[1]
+        )
+        return first_operand_encoding | second_operand_encoding

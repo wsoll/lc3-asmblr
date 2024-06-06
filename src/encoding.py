@@ -91,7 +91,6 @@ class Encoding:
         "LDI": 9,
         "LDR": 6,
         "LEA": 9,
-        "NOT": 9,
         "ST": 9,
         "STI": 9,
         "STR": 6,

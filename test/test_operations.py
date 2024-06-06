@@ -41,6 +41,10 @@ class TestOperations:
             ("JMP", SyntaxError),
             ("AND R0, R1, 155", TypeError),
             ('ADD R0, R3, "Hello, world!"', TypeError),
+            ("NOT R1, R2, R2", SyntaxError),
+            ("NOT", SyntaxError),
+            ("NOT #14, R3", SyntaxError),
+            ("NOT R1, x19", SyntaxError),
         ],
     )
     def test_invalid_operands_raises(self, instruction, error_type):
