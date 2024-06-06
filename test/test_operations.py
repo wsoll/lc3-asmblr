@@ -23,3 +23,19 @@ class TestOperations:
         assembler = Assembler()
         assembler.read_assembly(instruction)
         assert assembler.to_bytes().hex()[4:] == binary_encoding.hex()
+
+    @pytest.mark.parametrize(
+        "instruction, error_type", [
+            ("ADD R0, R1", SyntaxError),
+            ("ADD R0, R1, R2, R3", SyntaxError),
+            ("ADD #14, R1, R2", SyntaxError),
+            ("AND R0, #14, R2", SyntaxError),
+            ("AND R0, R1, 155", TypeError),
+            ('ADD R0, R3, "Hello, world!"', TypeError)
+        ]
+    )
+    def test_add_and_invalid_operands_raises(self, instruction, error_type):
+        assembler = Assembler()
+        with pytest.raises(error_type):
+            assembler.read_assembly(instruction)
+

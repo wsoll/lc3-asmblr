@@ -73,7 +73,12 @@ class InstructionSet:
             or not is_first_operand_destination_register
             or not is_second_operand_source_register
         ):
-            raise SyntaxError("...")  # ToDo: with tests
+            raise SyntaxError(
+                f"Operands validation failure - Three operands: {is_three_operands}, "
+                f"First operand is destination register: "
+                f"{is_first_operand_destination_register}, Second operand is source "
+                f"register: {is_second_operand_source_register}"
+            )
 
         first_operand_encoding = (
             Encoding.REGISTERS[operands[0]] << Encoding.REGISTER_OPERANDS_POSITION[0]
@@ -91,6 +96,9 @@ class InstructionSet:
                 1 << Encoding.OPERATION_IMMEDIATE_VALUE_FLAG_POSITION[OpCode.ADD]
             )
         else:
-            raise SyntaxError("...")  # ToDo: with tests
+            raise TypeError(
+                f"Unknown third operand type: {operands[2]}. "
+                f"Register or immediate value are accepted only."
+            )
 
         return first_operand_encoding | second_operand_encoding | third_operand_encoding
