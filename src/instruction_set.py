@@ -8,13 +8,13 @@ class InstructionSet:
         operands_binary_repr = 0x000
         match operation_code:
             case OpCode.ADD:
-                operands_binary_repr |= self.get_add_and_operands_encoding(operands)
+                operands_binary_repr |= self.get_add_or_and_operands_encoding(operands)
             case OpCode.AND:
-                operands_binary_repr |= self.get_add_and_operands_encoding(operands)
+                operands_binary_repr |= self.get_add_or_and_operands_encoding(operands)
             case OpCode.BR:
                 ...
             case OpCode.JMP:
-                operands_binary_repr |= self.get_operands_encoding(operands)
+                operands_binary_repr |= self.get_jump_operand_encoding(operands)
             case OpCode.JSR:
                 ...
             case OpCode.JSRR:
@@ -30,7 +30,8 @@ class InstructionSet:
             case OpCode.NOT:
                 operands_binary_repr |= self.get_operands_encoding(operands)
             case OpCode.RET:
-                ...
+                if len(operands) != 0:
+                    raise SyntaxError("Return instruction doesn't accept operands.")
             case OpCode.RTI:
                 ...
             case OpCode.ST:
@@ -60,7 +61,7 @@ class InstructionSet:
         return operands_encoding
 
     @staticmethod
-    def get_add_and_operands_encoding(operands: list[str]) -> int:
+    def get_add_or_and_operands_encoding(operands: list[str]) -> int:
         is_three_operands = True if len(operands) == 3 else False
         is_first_operand_destination_register = (
             True if operands[0] in Encoding.REGISTERS.keys() else False
@@ -102,3 +103,19 @@ class InstructionSet:
             )
 
         return first_operand_encoding | second_operand_encoding | third_operand_encoding
+
+    @staticmethod
+    def get_jump_operand_encoding(operands: list[str]) -> int:
+        is_single_operand = True if len(operands) == 1 else False
+        is_base_register_operand = True if operands[0] in Encoding.REGISTERS else False
+
+        if not is_single_operand or not is_base_register_operand:
+            raise SyntaxError(
+                f"Operands validation failure - Single operand: {is_single_operand}, "
+                f"Singular operand is base register: {is_base_register_operand}"
+            )
+
+        base_operand_encoding = (
+            Encoding.REGISTERS[operands[0]] << Encoding.BASE_REGISTER_POSITION
+        )
+        return base_operand_encoding

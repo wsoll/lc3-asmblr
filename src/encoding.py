@@ -44,6 +44,7 @@ class Encoding:
     """
 
     REGISTER_OPERANDS_POSITION = [9, 6, 0]
+    BASE_REGISTER_POSITION = 6
     CONDITION_FLAGS = {"n": 1 << 11, "z": 1 << 10, "p": 1 << 9}
     DIRECTIVE_CODES = (
         PseudoOpCode.ORIG,
