@@ -28,6 +28,8 @@ class TestOperations:
     @pytest.mark.parametrize(
         "instruction, error_type",
         [
+            ("ADD", SyntaxError),
+            ("AND R1", SyntaxError),
             ("ADD R0, R1", SyntaxError),
             ("ADD R0, R1, R2, R3", SyntaxError),
             ("ADD #14, R1, R2", SyntaxError),

@@ -63,22 +63,22 @@ class InstructionSet:
     @staticmethod
     def get_add_or_and_operands_encoding(operands: list[str]) -> int:
         is_three_operands = True if len(operands) == 3 else False
-        is_first_operand_destination_register = (
-            True if operands[0] in Encoding.REGISTERS.keys() else False
+        is_first_operand_register = (
+            True if is_three_operands and operands[0] in Encoding.REGISTERS.keys() else False
         )
-        is_second_operand_source_register = (
-            True if operands[1] in Encoding.REGISTERS.keys() else False
+        is_second_operand_register = (
+            True if is_three_operands and operands[1] in Encoding.REGISTERS.keys() else False
         )
         if (
             not is_three_operands
-            or not is_first_operand_destination_register
-            or not is_second_operand_source_register
+            or not is_first_operand_register
+            or not is_second_operand_register
         ):
             raise SyntaxError(
                 f"Operands validation failure - Three operands: {is_three_operands}, "
                 f"First operand is destination register: "
-                f"{is_first_operand_destination_register}, Second operand is source "
-                f"register: {is_second_operand_source_register}"
+                f"{is_first_operand_register}, Second operand is source "
+                f"register: {is_second_operand_register}"
             )
 
         first_operand_encoding = (
