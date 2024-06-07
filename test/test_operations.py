@@ -15,7 +15,7 @@ class TestOperations:
             ("JMP R2", b"\xC0\x80"),
             ("RET", b"\xC1\xC0"),
             # ("JSRR R2", b"\x20\x80"),
-            # ("LDR R2, R1, #5", b"\x64\x45"),
+            ("LDR R2, R1, #5", b"\x64\x45"),
             ("NOT R2, R1", b"\x94\x7F"),
             ("STR R2, R1, #5", b"\x74\x45"),
         ],
@@ -39,6 +39,9 @@ class TestOperations:
             "STR R2, R1, R4",
             "STR R2, x4, R4",
             "STR x4, R2, R4",
+            "LDR R2, R1, R4",
+            "LDR R2, x4, R4",
+            "LDR x4, R2, R4",
         ],
     )
     def test_invalid_operands_type_raises(self, instruction):

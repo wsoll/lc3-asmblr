@@ -23,7 +23,7 @@ class InstructionSet:
             case OpCode.LDI:
                 ...
             case OpCode.LDR:
-                ...
+                return self.get_store_or_load_base_encoding(operands)
             case OpCode.LEA:
                 ...
             case OpCode.NOT:
@@ -39,7 +39,7 @@ class InstructionSet:
             case OpCode.STI:
                 ...
             case OpCode.STR:
-                return self.get_store_base_encoding(operands)
+                return self.get_store_or_load_base_encoding(operands)
         raise RuntimeError("Processing operands for unknown instruction.")
 
     def validate_operands(
@@ -112,7 +112,7 @@ class InstructionSet:
         )
         return first_operand_encoding | second_operand_encoding
 
-    def get_store_base_encoding(self, operands: list[str]) -> int:
+    def get_store_or_load_base_encoding(self, operands: list[str]) -> int:
         self.validate_operands(
             operands, [OperandType.REGISTER, OperandType.REGISTER, OperandType.NUMERAL]
         )
