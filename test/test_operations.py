@@ -17,7 +17,7 @@ class TestOperations:
             # ("JSRR R2", b"\x20\x80"),
             # ("LDR R2, R1, #5", b"\x64\x45"),
             ("NOT R2, R1", b"\x94\x7F"),
-            # ("STR R2, R1, #5", b"\x74\x45"),
+            ("STR R2, R1, #5", b"\x74\x45"),
         ],
     )
     def test_binary_encoding(self, instruction, binary_encoding):
@@ -36,6 +36,9 @@ class TestOperations:
             ('ADD R0, R3, "Hello, world!"', TypeError),
             ("NOT #14, R3", TypeError),
             ("NOT R1, x19", TypeError),
+            ("STR R2, R1, R4", TypeError),
+            ("STR R2, x4, R4", TypeError),
+            ("STR x4, R2, R4", TypeError),
         ],
     )
     def test_invalid_operands_type_raises(self, instruction, error_type):
@@ -55,6 +58,10 @@ class TestOperations:
             ("JMP", IndexError),
             ("NOT R1, R2, R2", IndexError),
             ("NOT", IndexError),
+            ("STR R1, R2", IndexError),
+            ("STR R1", IndexError),
+            ("STR R1, R2, #4, R4", IndexError),
+            ("STR", IndexError),
         ],
     )
     def test_invalid_number_of_operands_raises(self, instruction, error_type):

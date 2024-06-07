@@ -39,7 +39,7 @@ class InstructionSet:
             case OpCode.STI:
                 ...
             case OpCode.STR:
-                ...
+                return self.get_store_base_encoding(operands)
         raise RuntimeError("Processing operands for unknown instruction.")
 
     def validate_operands(
@@ -111,6 +111,19 @@ class InstructionSet:
             Encoding.REGISTERS[operands[1]] << Encoding.REGISTER_OPERANDS_POSITION[1]
         )
         return first_operand_encoding | second_operand_encoding
+
+    def get_store_base_encoding(self, operands: list[str]) -> int:
+        self.validate_operands(
+            operands, [OperandType.REGISTER, OperandType.REGISTER, OperandType.NUMERAL]
+        )
+        first_operand_encoding = (
+            Encoding.REGISTERS[operands[0]] << Encoding.REGISTER_OPERANDS_POSITION[0]
+        )
+        second_operand_encoding = (
+            Encoding.REGISTERS[operands[1]] << Encoding.REGISTER_OPERANDS_POSITION[1]
+        )
+        third_operand_encoding = cast_to_numeral(operands[2])
+        return first_operand_encoding | second_operand_encoding | third_operand_encoding
 
     @staticmethod
     def must_be_register_and_is_not(operand: str, type_criteria: OperandType) -> bool:
