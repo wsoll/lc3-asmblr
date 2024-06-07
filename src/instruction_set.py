@@ -6,30 +6,20 @@ class InstructionSet:
 
     def process_operands(self, operation_code: str, operands: list[str]) -> int:
         match operation_code:
-            case OpCode.ADD:
-                return self.get_add_or_and_operands_encoding(operands)
-            case OpCode.AND:
+            case OpCode.ADD | OpCode.AND:
                 return self.get_add_or_and_operands_encoding(operands)
             case OpCode.BR:
                 ...
-            case OpCode.JMP:
+            case OpCode.JMP | OpCode.JSRR:
                 return self.get_jump_or_jump_to_subroutine_register_operand_encoding(
                     operands
                 )
             case OpCode.JSR:
                 ...
-            case OpCode.JSRR:
-                return self.get_jump_or_jump_to_subroutine_register_operand_encoding(
-                    operands
-                )
-            case OpCode.LD:
+            case OpCode.LD | OpCode.LDI | OpCode.LEA:
                 ...
-            case OpCode.LDI:
-                ...
-            case OpCode.LDR:
+            case OpCode.LDR | OpCode.STR:
                 return self.get_store_or_load_base_encoding(operands)
-            case OpCode.LEA:
-                ...
             case OpCode.NOT:
                 return self.get_not_operand_encoding(operands)
             case OpCode.RET:
@@ -38,12 +28,8 @@ class InstructionSet:
                 return 0
             case OpCode.RTI:
                 ...
-            case OpCode.ST:
+            case OpCode.ST | OpCode.STI:
                 ...
-            case OpCode.STI:
-                ...
-            case OpCode.STR:
-                return self.get_store_or_load_base_encoding(operands)
         raise RuntimeError("Processing operands for unknown instruction.")
 
     def validate_operands(
