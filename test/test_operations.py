@@ -26,45 +26,45 @@ class TestOperations:
         assert assembler.to_bytes().hex()[4:] == binary_encoding.hex()
 
     @pytest.mark.parametrize(
-        "instruction, error_type",
+        "instruction",
         [
-            ("ADD #14, R1, R2", TypeError),
-            ("AND R0, #14, R2", TypeError),
-            ("AND R0, #14, R2", TypeError),
-            ("JMP #5", TypeError),
-            ("AND R0, R1, 155", TypeError),
-            ('ADD R0, R3, "Hello, world!"', TypeError),
-            ("NOT #14, R3", TypeError),
-            ("NOT R1, x19", TypeError),
-            ("STR R2, R1, R4", TypeError),
-            ("STR R2, x4, R4", TypeError),
-            ("STR x4, R2, R4", TypeError),
+            "ADD #14, R1, R2",
+            "AND R0, #14, R2",
+            "AND R0, #14, R2",
+            "JMP #5",
+            "AND R0, R1, 155",
+            'ADD R0, R3, "Hello, world!"',
+            "NOT #14, R3",
+            "NOT R1, x19",
+            "STR R2, R1, R4",
+            "STR R2, x4, R4",
+            "STR x4, R2, R4",
         ],
     )
-    def test_invalid_operands_type_raises(self, instruction, error_type):
+    def test_invalid_operands_type_raises(self, instruction):
         assembler = Assembler()
         with pytest.raises(TypeError):
             assembler.read_assembly(instruction)
 
     @pytest.mark.parametrize(
-        "instruction, error_type",
+        "instruction",
         [
-            ("ADD", IndexError),
-            ("AND R1", IndexError),
-            ("ADD R0, R1", IndexError),
-            ("ADD R0, R1, R2, R3", IndexError),
-            ("RET R0", IndexError),
-            ("JMP R0, R1", IndexError),
-            ("JMP", IndexError),
-            ("NOT R1, R2, R2", IndexError),
-            ("NOT", IndexError),
-            ("STR R1, R2", IndexError),
-            ("STR R1", IndexError),
-            ("STR R1, R2, #4, R4", IndexError),
-            ("STR", IndexError),
+            "ADD",
+            "AND R1",
+            "ADD R0, R1",
+            "ADD R0, R1, R2, R3",
+            "RET R0",
+            "JMP R0, R1",
+            "JMP",
+            "NOT R1, R2, R2",
+            "NOT",
+            "STR R1, R2",
+            "STR R1",
+            "STR R1, R2, #4, R4",
+            "STR",
         ],
     )
-    def test_invalid_number_of_operands_raises(self, instruction, error_type):
+    def test_invalid_number_of_operands_raises(self, instruction):
         assembler = Assembler()
         with pytest.raises(IndexError):
             assembler.read_assembly(instruction)
