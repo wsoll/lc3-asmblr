@@ -28,26 +28,36 @@ class TestOperations:
     @pytest.mark.parametrize(
         "instruction, error_type",
         [
-            ("ADD", SyntaxError),
-            ("AND R1", SyntaxError),
-            ("ADD R0, R1", SyntaxError),
-            ("ADD R0, R1, R2, R3", SyntaxError),
-            ("ADD #14, R1, R2", SyntaxError),
-            ("AND R0, #14, R2", SyntaxError),
-            ("AND R0, #14, R2", SyntaxError),
-            ("RET R0", SyntaxError),
-            ("JMP R0, R1", SyntaxError),
-            ("JMP #5", SyntaxError),
-            ("JMP", SyntaxError),
+            ("ADD #14, R1, R2", TypeError),
+            ("AND R0, #14, R2", TypeError),
+            ("AND R0, #14, R2", TypeError),
+            ("JMP #5", TypeError),
             ("AND R0, R1, 155", TypeError),
             ('ADD R0, R3, "Hello, world!"', TypeError),
-            ("NOT R1, R2, R2", SyntaxError),
-            ("NOT", SyntaxError),
-            ("NOT #14, R3", SyntaxError),
-            ("NOT R1, x19", SyntaxError),
+            ("NOT #14, R3", TypeError),
+            ("NOT R1, x19", TypeError),
         ],
     )
-    def test_invalid_operands_raises(self, instruction, error_type):
+    def test_invalid_operands_type_raises(self, instruction, error_type):
         assembler = Assembler()
-        with pytest.raises(error_type):
+        with pytest.raises(TypeError):
+            assembler.read_assembly(instruction)
+
+    @pytest.mark.parametrize(
+        "instruction, error_type",
+        [
+            ("ADD", IndexError),
+            ("AND R1", IndexError),
+            ("ADD R0, R1", IndexError),
+            ("ADD R0, R1, R2, R3", IndexError),
+            ("RET R0", IndexError),
+            ("JMP R0, R1", IndexError),
+            ("JMP", IndexError),
+            ("NOT R1, R2, R2", IndexError),
+            ("NOT", IndexError),
+        ],
+    )
+    def test_invalid_number_of_operands_raises(self, instruction, error_type):
+        assembler = Assembler()
+        with pytest.raises(IndexError):
             assembler.read_assembly(instruction)

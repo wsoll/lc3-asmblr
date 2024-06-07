@@ -1,3 +1,6 @@
+from enum import Enum
+
+
 class PseudoOpCode:
     ORIG = ".ORIG"
     FILL = ".FILL"
@@ -23,6 +26,12 @@ class OpCode:
     ST = "ST"
     STI = "STI"
     STR = "STR"
+
+
+class OperandType(Enum):
+    REGISTER = 1
+    NUMERAL = 2
+    EITHER_OR = 3
 
 
 class Encoding:

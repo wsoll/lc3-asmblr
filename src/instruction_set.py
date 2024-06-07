@@ -1,4 +1,4 @@
-from encoding import OpCode, Encoding
+from encoding import OpCode, Encoding, OperandType
 from syntax import is_numeral_base_prefixed, cast_to_numeral
 
 
@@ -30,7 +30,7 @@ class InstructionSet:
                 return self.get_not_operand_encoding(operands)
             case OpCode.RET:
                 if len(operands) != 0:
-                    raise SyntaxError("Return instruction doesn't accept operands.")
+                    raise IndexError("Return instruction doesn't accept operands.")
                 return 0
             case OpCode.RTI:
                 ...
@@ -42,30 +42,33 @@ class InstructionSet:
                 ...
         raise RuntimeError("Processing operands for unknown instruction.")
 
-    @staticmethod
-    def get_add_or_and_operands_encoding(operands: list[str]) -> int:
-        is_three_operands = True if len(operands) == 3 else False
-        is_first_operand_register = (
-            True
-            if is_three_operands and operands[0] in Encoding.REGISTERS.keys()
-            else False
-        )
-        is_second_operand_register = (
-            True
-            if is_three_operands and operands[1] in Encoding.REGISTERS.keys()
-            else False
-        )
-        if (
-            not is_three_operands
-            or not is_first_operand_register
-            or not is_second_operand_register
-        ):
-            raise SyntaxError(
-                f"Operands validation failure - Three operands: {is_three_operands}, "
-                f"First operand is destination register: "
-                f"{is_first_operand_register}, Second operand is source "
-                f"register: {is_second_operand_register}"
+    def validate_operands(
+        self, operands: list[str], types_criteria: list[OperandType]
+    ) -> None:
+        operands_count = len(operands)
+        expected_operands_count = len(types_criteria)
+
+        if operands_count != expected_operands_count:
+            raise IndexError(
+                f"Invalid operands number - expected: {expected_operands_count}, "
+                f"actual {operands_count}"
             )
+
+        for index, (operand, type_criteria) in enumerate(zip(operands, types_criteria)):
+            if self.must_be_register_and_is_not(operand, type_criteria):
+                raise TypeError(f"Operand ({index+1}) isn't a register.")
+            elif self.must_be_numeral_and_is_not(operand, type_criteria):
+                raise TypeError(f"Operand ({index+1}) isn't a numeral.")
+            elif self.must_be_either_register_or_numeral_and_is_not(
+                operand, type_criteria
+            ):
+                raise TypeError(f"Operand ({index+1}) isn't a register nor a numeral.")
+
+    def get_add_or_and_operands_encoding(self, operands: list[str]) -> int:
+        self.validate_operands(
+            operands,
+            [OperandType.REGISTER, OperandType.REGISTER, OperandType.EITHER_OR],
+        )
 
         first_operand_encoding = (
             Encoding.REGISTERS[operands[0]] << Encoding.REGISTER_OPERANDS_POSITION[0]
@@ -90,44 +93,16 @@ class InstructionSet:
 
         return first_operand_encoding | second_operand_encoding | third_operand_encoding
 
-    @staticmethod
-    def get_jump_operand_encoding(operands: list[str]) -> int:
-        is_single_operand = True if len(operands) == 1 else False
-        is_base_register_operand = (
-            True if is_single_operand and operands[0] in Encoding.REGISTERS else False
-        )
-
-        if not is_single_operand or not is_base_register_operand:
-            raise SyntaxError(
-                f"Operands validation failure - Single operand: {is_single_operand}, "
-                f"Singular operand is base register: {is_base_register_operand}"
-            )
+    def get_jump_operand_encoding(self, operands: list[str]) -> int:
+        self.validate_operands(operands, [OperandType.REGISTER])
 
         base_operand_encoding = (
             Encoding.REGISTERS[operands[0]] << Encoding.BASE_REGISTER_POSITION
         )
         return base_operand_encoding
 
-    @staticmethod
-    def get_not_operand_encoding(operands: list[str]) -> int:
-        is_two_operands = True if len(operands) == 2 else False
-        is_first_operand_register = (
-            True if is_two_operands and operands[0] in Encoding.REGISTERS else False
-        )
-        is_second_operand_register = (
-            True if is_two_operands and operands[1] in Encoding.REGISTERS else False
-        )
-
-        if (
-            not is_two_operands
-            or not is_first_operand_register
-            or not is_second_operand_register
-        ):
-            raise SyntaxError(
-                f"Operands validation failure - Two operands: {is_two_operands}, "
-                f"First operand is register: {is_first_operand_register}, "
-                f"Second operand is register: {is_second_operand_register}"
-            )
+    def get_not_operand_encoding(self, operands: list[str]) -> int:
+        self.validate_operands(operands, [OperandType.REGISTER, OperandType.REGISTER])
 
         first_operand_encoding = (
             Encoding.REGISTERS[operands[0]] << Encoding.REGISTER_OPERANDS_POSITION[0]
@@ -136,3 +111,35 @@ class InstructionSet:
             Encoding.REGISTERS[operands[1]] << Encoding.REGISTER_OPERANDS_POSITION[1]
         )
         return first_operand_encoding | second_operand_encoding
+
+    @staticmethod
+    def must_be_register_and_is_not(operand: str, type_criteria: OperandType) -> bool:
+        return (
+            True
+            if type_criteria == OperandType.REGISTER
+            and operand not in Encoding.REGISTERS
+            else False
+        )
+
+    @staticmethod
+    def must_be_numeral_and_is_not(operand: str, type_criteria: OperandType) -> bool:
+        return (
+            True
+            if type_criteria == OperandType.NUMERAL
+            and not is_numeral_base_prefixed(operand)
+            else False
+        )
+
+    @staticmethod
+    def must_be_either_register_or_numeral_and_is_not(
+        operand: str, type_criteria: OperandType
+    ) -> bool:
+        return (
+            True
+            if type_criteria == OperandType.EITHER_OR
+            and (
+                not is_numeral_base_prefixed(operand)
+                and operand not in Encoding.REGISTERS
+            )
+            else False
+        )
