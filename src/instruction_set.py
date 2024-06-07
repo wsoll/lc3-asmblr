@@ -13,11 +13,15 @@ class InstructionSet:
             case OpCode.BR:
                 ...
             case OpCode.JMP:
-                return self.get_jump_operand_encoding(operands)
+                return self.get_jump_or_jump_to_subroutine_register_operand_encoding(
+                    operands
+                )
             case OpCode.JSR:
                 ...
             case OpCode.JSRR:
-                ...
+                return self.get_jump_or_jump_to_subroutine_register_operand_encoding(
+                    operands
+                )
             case OpCode.LD:
                 ...
             case OpCode.LDI:
@@ -93,7 +97,9 @@ class InstructionSet:
 
         return first_operand_encoding | second_operand_encoding | third_operand_encoding
 
-    def get_jump_operand_encoding(self, operands: list[str]) -> int:
+    def get_jump_or_jump_to_subroutine_register_operand_encoding(
+        self, operands: list[str]
+    ) -> int:
         self.validate_operands(operands, [OperandType.REGISTER])
 
         base_operand_encoding = (
