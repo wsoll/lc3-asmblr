@@ -19,10 +19,16 @@ class Assembler(InstructionSet, Logger):
 
     Assembly file contains instructions (lines) that have both an operation code which
     indicates the kind of task to perform and a set of parameters (operands) which
-    provide to the task being performed.
+    provide to the task being performed. Every line is encoded with 16-bit/2-bytes word.
 
     Attributes:
-        big_endian: b"\x50\x43" in Big-Endian: 0x5043, Little-endian: 0x4350
+        big_endian: defines if encoding for parsing to bytes has to be big or little
+            endian, e.g.: b"\x50\x43" in Big-Endian: 0x5043, Little-endian: 0x4350
+        origin: added on the beginning of assembly file while parsing to bytes.
+        line_counter: counts current assembly file line.
+        end_flag: set to true if encounters .END instruction in an assembly file to
+            raise an exception if any instruction remains afterward.
+        memory: actual encoding of assembly file that contains machine code for LC-3.
 
     """
 
@@ -92,6 +98,12 @@ class Assembler(InstructionSet, Logger):
         self.memory[self.program_counter] = value
 
     def process_origin(self, instruction: list[str]) -> None:
+        """Define starting address of program. If not setup default 0x3000
+
+        syntax: .ORIG address
+            .ORIG: The directive keyword.
+            address: a 16-bit memory address where the program or data block will start.
+        """
         if self.line_counter != 0:
             raise SyntaxError(".ORIG has to be placed before a main program.")
 
@@ -157,6 +169,14 @@ class Assembler(InstructionSet, Logger):
             raise SyntaxError(msg)
 
     def process_string_with_zero(self, instruction: list[str]) -> None:
+        """Allocate n+1 locations, initialize with characters and null terminator.
+
+        syntax: label .STRINGZ "string"
+            label: (Optional) A symbolic name for the memory location being defined.
+            .STRINGZ: The directive keyword.
+            "string": The actual string to be stored in memory. Null character added on
+                its end.
+        """
         arg_count = validate_directive_syntax(instruction, ".STRINGZ")
 
         arg = instruction[arg_count.value - 1]
