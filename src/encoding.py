@@ -46,10 +46,6 @@ class Encoding:
         DIRECTIVE_CODES: Set of assembler 'pseudo operations' which generate a piece of
             code or data (like macros).
         OPERATION: Encoding for tasks representation that the CPU knows how to process.
-        OPERATION_IMMEDIATE_VALUE_FLAG_POSITION: Flag position defining mode in word for
-            operations having immediate value operand option.
-        IMMEDIATE_MASK: To identify immediate mode for OP CODEs.
-
     """
 
     REGISTER_OPERANDS_POSITION = [9, 6, 0]
@@ -83,28 +79,3 @@ class Encoding:
         OpCode.STI: 0b1011 << 12,  # store indirect
         OpCode.STR: 0b0111 << 12,  # store register
     }
-    TRAP_ROUTINES = {
-        "GETC": (0b1111 << 12) + 0x20,
-        "OUT": (0b1111 << 12) + 0x21,
-        "PUTS": (0b1111 << 12) + 0x22,
-        "IN": (0b1111 << 12) + 0x23,
-        "PUTSP": (0b1111 << 12) + 0x24,
-        "HALT": (0b1111 << 12) + 0x25,
-    }
-    OPERATION_IMMEDIATE_VALUE_FLAG_POSITION = {
-        "ADD": 5,
-        "AND": 5,
-        "BR": 9,
-        "JSR": 11,
-        "LD": 9,
-        "LDI": 9,
-        "LDR": 6,
-        "LEA": 9,
-        "ST": 9,
-        "STI": 9,
-        "STR": 6,
-        "TRAP": 8,
-    }
-    IMMEDIATE_MASK = {}
-    for im in OPERATION_IMMEDIATE_VALUE_FLAG_POSITION.keys():
-        IMMEDIATE_MASK[im] = (1 << OPERATION_IMMEDIATE_VALUE_FLAG_POSITION[im]) - 1

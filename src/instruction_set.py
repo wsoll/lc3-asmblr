@@ -79,8 +79,9 @@ class InstructionSet:
                 << Encoding.REGISTER_OPERANDS_POSITION[2]
             )
         elif is_numeral_base_prefixed(operands[2]):
+            immediate_value_flag_position = 5
             third_operand_encoding = cast_to_numeral(operands[2]) | (
-                1 << Encoding.OPERATION_IMMEDIATE_VALUE_FLAG_POSITION[OpCode.ADD]
+                1 << immediate_value_flag_position
             )
         else:
             raise TypeError(
