@@ -7,19 +7,19 @@ class InstructionSet:
     def process_operands(self, operation_code: str, operands: list[str]) -> int:
         match operation_code:
             case OpCode.ADD | OpCode.AND:
-                return self.get_add_or_and_operands_encoding(operands)
+                return self.get_5_bit_flag_option_register_xor_numeral_encoding(
+                    operands
+                )
             case OpCode.BR:
                 ...
             case OpCode.JMP | OpCode.JSRR:
-                return self.get_jump_or_jump_to_subroutine_register_operand_encoding(
-                    operands
-                )
+                return self.get_base_register_only_operand_encoding(operands)
             case OpCode.JSR:
                 ...
-            case OpCode.LD | OpCode.LDI | OpCode.LEA:
+            case OpCode.LD | OpCode.LDI | OpCode.LEA | OpCode.ST | OpCode.STI:
                 ...
             case OpCode.LDR | OpCode.STR:
-                return self.get_store_or_load_base_encoding(operands)
+                return self.get_6_bit_signed_offset_encoding(operands)
             case OpCode.NOT:
                 return self.get_not_operand_encoding(operands)
             case OpCode.RET:
@@ -28,13 +28,12 @@ class InstructionSet:
                 return 0
             case OpCode.RTI:
                 ...
-            case OpCode.ST | OpCode.STI:
-                ...
         raise RuntimeError("Processing operands for unknown instruction.")
 
     def validate_operands(
         self, operands: list[str], types_criteria: list[OperandType]
     ) -> None:
+        """Validates syntax of operands for defined types criteria."""
         operands_count = len(operands)
         expected_operands_count = len(types_criteria)
 
@@ -54,16 +53,24 @@ class InstructionSet:
             ):
                 raise TypeError(f"Operand ({index+1}) isn't a register nor a numeral.")
 
-    def get_add_or_and_operands_encoding(self, operands: list[str]) -> int:
+    def get_5_bit_flag_option_register_xor_numeral_encoding(
+        self, operands: list[str]
+    ) -> int:
+        """For common instructions that allow either register or numeral third operand.
+
+        ADD, AND: 3-bit Destination Register, 3-Bit Source Register,
+            (register option): 1-bit False flag, 2-bits fixed, 3-bit Source Register
+            (numeral option): 1-bit True flag, 5-bit Immediate Value
+        """
         self.validate_operands(
             operands,
             [OperandType.REGISTER, OperandType.REGISTER, OperandType.EITHER_OR],
         )
 
-        first_operand_encoding = (
+        first_register_operand_encoding = (
             Encoding.REGISTERS[operands[0]] << Encoding.REGISTER_OPERANDS_POSITION[0]
         )
-        second_operand_encoding = (
+        second_register_operand_encoding = (
             Encoding.REGISTERS[operands[1]] << Encoding.REGISTER_OPERANDS_POSITION[1]
         )
         if operands[2] in Encoding.REGISTERS.keys():
@@ -81,11 +88,17 @@ class InstructionSet:
                 f"Register or immediate value are accepted only."
             )
 
-        return first_operand_encoding | second_operand_encoding | third_operand_encoding
+        return (
+            first_register_operand_encoding
+            | second_register_operand_encoding
+            | third_operand_encoding
+        )
 
-    def get_jump_or_jump_to_subroutine_register_operand_encoding(
-        self, operands: list[str]
-    ) -> int:
+    def get_base_register_only_operand_encoding(self, operands: list[str]) -> int:
+        """For common instructions that contain Base Register on 8-to-6 position.
+
+        JMP, JSRR: 3-bits fixed, 3-bit Base Register, 6-bits fixed
+        """
         self.validate_operands(operands, [OperandType.REGISTER])
 
         base_operand_encoding = (
@@ -94,6 +107,10 @@ class InstructionSet:
         return base_operand_encoding
 
     def get_not_operand_encoding(self, operands: list[str]) -> int:
+        """For specific 'NOT' instruction.
+
+        NOT: 3-bit Destination Register, 3-bit Source Register, 6-bit fixed.
+        """
         self.validate_operands(operands, [OperandType.REGISTER, OperandType.REGISTER])
 
         first_operand_encoding = (
@@ -104,18 +121,27 @@ class InstructionSet:
         )
         return first_operand_encoding | second_operand_encoding
 
-    def get_store_or_load_base_encoding(self, operands: list[str]) -> int:
+    def get_6_bit_signed_offset_encoding(self, operands: list[str]) -> int:
+        """For common instructions that contain 6-bit singed offset.
+
+        LDR: 3-bit Destination Register, 3-bit Base Register, 6-bit offset
+        STR: 3-bit Source Register, 3-bit Base Register, 6-bit offset
+        """
         self.validate_operands(
             operands, [OperandType.REGISTER, OperandType.REGISTER, OperandType.NUMERAL]
         )
-        first_operand_encoding = (
+        first_register_operand_encoding = (
             Encoding.REGISTERS[operands[0]] << Encoding.REGISTER_OPERANDS_POSITION[0]
         )
-        second_operand_encoding = (
+        second_register_operand_encoding = (
             Encoding.REGISTERS[operands[1]] << Encoding.REGISTER_OPERANDS_POSITION[1]
         )
-        third_operand_encoding = cast_to_numeral(operands[2])
-        return first_operand_encoding | second_operand_encoding | third_operand_encoding
+        _6_bit_signed_offset_encoding = cast_to_numeral(operands[2])
+        return (
+            first_register_operand_encoding
+            | second_register_operand_encoding
+            | _6_bit_signed_offset_encoding
+        )
 
     @staticmethod
     def must_be_register_and_is_not(operand: str, type_criteria: OperandType) -> bool:
