@@ -64,7 +64,7 @@ class InstructionSet:
         """
         self.validate_operands(
             operands,
-            [OperandType.REGISTER, OperandType.REGISTER, OperandType.EITHER_OR],
+            [OperandType.REGISTER, OperandType.REGISTER, OperandType.REGISTER_XOR_NUMERAL],
         )
 
         first_register_operand_encoding = (
@@ -167,7 +167,7 @@ class InstructionSet:
     ) -> bool:
         return (
             True
-            if type_criteria == OperandType.EITHER_OR
+            if type_criteria == OperandType.REGISTER_XOR_NUMERAL
             and (
                 not is_numeral_base_prefixed(operand)
                 and operand not in Encoding.REGISTERS

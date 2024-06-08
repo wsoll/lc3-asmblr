@@ -31,7 +31,7 @@ class OpCode:
 class OperandType(Enum):
     REGISTER = 1
     NUMERAL = 2
-    EITHER_OR = 3
+    REGISTER_XOR_NUMERAL = 3
 
 
 class Encoding:
