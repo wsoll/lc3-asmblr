@@ -64,7 +64,11 @@ class InstructionSet:
         """
         self.validate_operands(
             operands,
-            [OperandType.REGISTER, OperandType.REGISTER, OperandType.REGISTER_XOR_NUMERAL],
+            [
+                OperandType.REGISTER,
+                OperandType.REGISTER,
+                OperandType.REGISTER_XOR_NUMERAL,
+            ],
         )
 
         first_register_operand_encoding = (

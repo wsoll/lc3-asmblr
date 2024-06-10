@@ -32,6 +32,7 @@ class OperandType(Enum):
     REGISTER = 1
     NUMERAL = 2
     REGISTER_XOR_NUMERAL = 3
+    LABEL = 4
 
 
 class Encoding:

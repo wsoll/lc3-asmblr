@@ -29,6 +29,9 @@ class Assembler(InstructionSet, Logger):
         end_flag: set to true if encounters .END instruction in an assembly file to
             raise an exception if any instruction remains afterward.
         memory: actual encoding of assembly file that contains machine code for LC-3.
+        labels_addresses: labels for instruction are followed by ':' on the beginning
+            of an assembly line. It assigns a symbolic name to an address corresponding
+            to the line, therefore there's a mapping between them.
 
     """
 
@@ -41,6 +44,7 @@ class Assembler(InstructionSet, Logger):
 
         # ToDo-3: May be connected with line_counter
         self.memory = array("H", [0] * (1 << 16))
+        self.labels_addresses: dict[str, int] = {}
 
     def read_assembly(self, line: str) -> None:
         if self.end_flag:
@@ -54,6 +58,9 @@ class Assembler(InstructionSet, Logger):
             self._logger.debug(f"Line[{self.line_counter}]: empty.")
             return
 
+        if instruction[0].endswith(":"):
+            self.process_label(instruction[0][:-1])
+
         for directive_code in Encoding.DIRECTIVE_CODES:
             if directive_code in instruction:
                 self.process_directive(instruction, directive_code)
@@ -63,6 +70,11 @@ class Assembler(InstructionSet, Logger):
             if operation_key in instruction:
                 self.process_instruction(instruction, operation_key)
                 return
+
+    def process_label(self, label_without_colon: str) -> None:
+        if label_without_colon in self.labels_addresses:
+            raise ValueError(f"Label duplication: {label_without_colon}")
+        self.labels_addresses[label_without_colon] = self.program_counter
 
     def process_directive(self, instruction: list[str], code: str) -> None:
         match code:
