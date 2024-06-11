@@ -60,6 +60,7 @@ class Assembler(InstructionSet, Logger):
 
         if instruction[0].endswith(":"):
             self.process_label(instruction[0][:-1])
+            instruction = instruction[1:]
 
         for directive_code in Encoding.DIRECTIVE_CODES:
             if directive_code in instruction:

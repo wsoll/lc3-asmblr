@@ -3,28 +3,49 @@ import pytest
 from assembler import Assembler
 
 
+@pytest.mark.parametrize(
+    "instruction, binary_encoding",
+    [
+        ("ADD R0, R1, R2", b"\x10\x42"),
+        ("ADD R0, R1, x5", b"\x10\x65"),
+        ("AND R3, R0, R2", b"\x56\x02"),
+        ("AND R3, R0, #14", b"\x56\x2E"),
+        ("JMP R2", b"\xC0\x80"),
+        ("RET", b"\xC1\xC0"),
+        ("JSRR R2", b"\x20\x80"),
+        ("LDR R2, R1, #5", b"\x64\x45"),
+        ("NOT R2, R1", b"\x94\x7F"),
+        ("STR R2, R1, #5", b"\x74\x45"),
+    ],
+)
 class TestOperations:
-
-    @pytest.mark.parametrize(
-        "instruction, binary_encoding",
-        [
-            ("ADD R0, R1, R2", b"\x10\x42"),
-            ("ADD R0, R1, x5", b"\x10\x65"),
-            ("AND R3, R0, R2", b"\x56\x02"),
-            ("AND R3, R0, #14", b"\x56\x2E"),
-            ("JMP R2", b"\xC0\x80"),
-            ("RET", b"\xC1\xC0"),
-            ("JSRR R2", b"\x20\x80"),
-            ("LDR R2, R1, #5", b"\x64\x45"),
-            ("NOT R2, R1", b"\x94\x7F"),
-            ("STR R2, R1, #5", b"\x74\x45"),
-        ],
-    )
     def test_binary_encoding(self, instruction, binary_encoding):
+        # GIVEN
         assembler = Assembler()
+
+        # WHEN
         assembler.read_assembly(instruction)
+
+        # THEN
         assert assembler.to_bytes().hex()[4:] == binary_encoding.hex()
 
+    def test_label_is_mapped_to_address_and_instruction_is_processed(self, instruction, binary_encoding):
+        # GIVEN
+        label = "START:"
+        instruction = label + " " + instruction
+        assembler = Assembler()
+        label_without_colon = label[:-1]
+        default_origin_address = 0x3000
+
+        # WHEN
+        assembler.read_assembly(instruction)
+
+        # THEN
+        assert assembler.to_bytes().hex()[4:] == binary_encoding.hex()
+        assert assembler.labels_addresses[label_without_colon] == default_origin_address
+
+
+class TestOperationsExceptions:
     @pytest.mark.parametrize(
         "instruction",
         [
