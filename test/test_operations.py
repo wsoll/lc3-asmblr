@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 import pytest
 
 from assembler import Assembler
@@ -29,15 +31,19 @@ class TestOperations:
         # THEN
         assert assembler.to_bytes().hex()[4:] == binary_encoding.hex()
 
-    def test_label_is_mapped_to_address_and_instruction_is_processed(self, instruction, binary_encoding):
+    def test_label_is_mapped_to_address_and_instruction_is_processed(
+        self, instruction, binary_encoding
+    ):
         # GIVEN
         label = "START:"
         instruction = label + " " + instruction
         assembler = Assembler()
         label_without_colon = label[:-1]
         default_origin_address = 0x3000
+        assembler.load_assembly = MagicMock(return_value=[instruction])
 
         # WHEN
+        assembler.map_symbolic_names("")
         assembler.read_assembly(instruction)
 
         # THEN

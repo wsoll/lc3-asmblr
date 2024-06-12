@@ -1,7 +1,8 @@
 from array import array
 from copy import deepcopy
+from typing import Generator
 
-from encoding import PseudoOpCode, Encoding
+from encoding import PseudoOpCode, Encoding, LABEL_IDENTIFIER
 from instruction_set import InstructionSet
 from logger import Logger
 from syntax import (
@@ -22,8 +23,6 @@ class Assembler(InstructionSet, Logger):
     provide to the task being performed. Every line is encoded with 16-bit/2-bytes word.
 
     Attributes:
-        big_endian: defines if encoding for parsing to bytes has to be big or little
-            endian, e.g.: b"\x50\x43" in Big-Endian: 0x5043, Little-endian: 0x4350
         origin: added on the beginning of assembly file while parsing to bytes.
         line_counter: counts current assembly file line.
         end_flag: set to true if encounters .END instruction in an assembly file to
@@ -35,16 +34,29 @@ class Assembler(InstructionSet, Logger):
 
     """
 
-    def __init__(self, big_endian: bool = True, verbose: bool = False):
+    def __init__(self, verbose: bool = False):
         super().__init__(verbose)
         self.origin = self.program_counter = 0x3000
-        self.big_endian = big_endian
         self.line_counter = -1
         self.end_flag = False
 
         # ToDo-3: May be connected with line_counter
         self.memory = array("H", [0] * (1 << 16))
         self.labels_addresses: dict[str, int] = {}
+
+    @staticmethod
+    def load_assembly(filepath: str) -> Generator[str, None, None]:
+        with open(filepath, "r") as file:
+            for line in file:
+                yield line
+
+    def map_symbolic_names(self, filepath: str) -> None:
+        for line in self.load_assembly(filepath):
+            instruction = parse_instruction(line)
+
+            if instruction[0].endswith(":"):
+                self.process_label(instruction[0][:-1])
+        self.program_counter = self.origin
 
     def read_assembly(self, line: str) -> None:
         if self.end_flag:
@@ -58,9 +70,11 @@ class Assembler(InstructionSet, Logger):
             self._logger.debug(f"Line[{self.line_counter}]: empty.")
             return
 
-        if instruction[0].endswith(":"):
-            self.process_label(instruction[0][:-1])
-            instruction = instruction[1:]
+        instruction = (
+            instruction[1:]
+            if instruction[0].endswith(LABEL_IDENTIFIER)
+            else instruction
+        )
 
         for directive_code in Encoding.DIRECTIVE_CODES:
             if directive_code in instruction:
@@ -207,10 +221,15 @@ class Assembler(InstructionSet, Logger):
             self._logger.error(msg)
             raise SyntaxError(msg)
 
-    def to_bytes(self) -> bytes:
+    def to_bytes(self, big_endian: bool = True) -> bytes:
+        """Encode result to .bin file.
+
+        big_endian: defines if encoding for parsing to bytes has to be big or little
+            endian, e.g.: b"\x50\x43" in Big-Endian: 0x5043, Little-endian: 0x4350
+        """
         memory_deepcopy = deepcopy(self.memory)
         memory_deepcopy[self.program_counter] = self.origin
-        if self.big_endian:
+        if big_endian:
             memory_deepcopy.byteswap()
         output = memory_deepcopy[
             self.program_counter : self.program_counter + 1

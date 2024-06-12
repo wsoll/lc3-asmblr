@@ -1,5 +1,7 @@
 from enum import Enum
 
+LABEL_IDENTIFIER = ":"
+
 
 class PseudoOpCode:
     ORIG = ".ORIG"
