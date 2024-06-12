@@ -6,27 +6,33 @@ class InstructionSet:
 
     def process_operands(self, operation_code: str, operands: list[str]) -> int:
         match operation_code:
-            case OpCode.ADD | OpCode.AND:
+            case OpCode.ADD | OpCode.BITWISE_AND:
                 return self.get_5_bit_flag_option_register_xor_numeral_encoding(
                     operands
                 )
-            case OpCode.BR:
+            case OpCode.BRANCH:
                 ...
-            case OpCode.JMP | OpCode.JSRR:
+            case OpCode.JUMP | OpCode.JUMP_TO_REGISTER_BY_BASE_REGISTER:
                 return self.get_base_register_only_operand_encoding(operands)
-            case OpCode.JSR:
+            case OpCode.JUMP_TO_REGISTER_BY_LABEL:
                 ...
-            case OpCode.LD | OpCode.LDI | OpCode.LEA | OpCode.ST | OpCode.STI:
+            case (
+                OpCode.LOAD
+                | OpCode.LOAD_INDIRECT
+                | OpCode.LOAD_EFFECTIVE_ADDRESS
+                | OpCode.STORE
+                | OpCode.STORE_INDIRECT
+            ):
                 ...
-            case OpCode.LDR | OpCode.STR:
+            case OpCode.LOAD_REGISTER | OpCode.STORE_REGISTER:
                 return self.get_6_bit_signed_offset_encoding(operands)
-            case OpCode.NOT:
+            case OpCode.BITWISE_NOT:
                 return self.get_not_operand_encoding(operands)
-            case OpCode.RET:
+            case OpCode.RETURN_JUMP:
                 if len(operands) != 0:
                     raise IndexError("Return instruction doesn't accept operands.")
                 return 0
-            case OpCode.RTI:
+            case OpCode.UNUSED:
                 ...
         raise RuntimeError("Processing operands for unknown instruction.")
 
