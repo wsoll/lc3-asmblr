@@ -157,31 +157,19 @@ class InstructionSet:
     @staticmethod
     def must_be_register_and_is_not(operand: str, type_criteria: OperandType) -> bool:
         return (
-            True
-            if type_criteria == OperandType.REGISTER
-            and operand not in Encoding.REGISTERS
-            else False
+            type_criteria == OperandType.REGISTER and operand not in Encoding.REGISTERS
         )
 
     @staticmethod
     def must_be_numeral_and_is_not(operand: str, type_criteria: OperandType) -> bool:
-        return (
-            True
-            if type_criteria == OperandType.NUMERAL
-            and not is_numeral_base_prefixed(operand)
-            else False
+        return type_criteria == OperandType.NUMERAL and not is_numeral_base_prefixed(
+            operand
         )
 
     @staticmethod
     def must_be_either_register_or_numeral_and_is_not(
         operand: str, type_criteria: OperandType
     ) -> bool:
-        return (
-            True
-            if type_criteria == OperandType.REGISTER_XOR_NUMERAL
-            and (
-                not is_numeral_base_prefixed(operand)
-                and operand not in Encoding.REGISTERS
-            )
-            else False
+        return type_criteria == OperandType.REGISTER_XOR_NUMERAL and (
+            not is_numeral_base_prefixed(operand) and operand not in Encoding.REGISTERS
         )
