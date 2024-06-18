@@ -48,7 +48,10 @@ class TestOperations:
 
         # THEN
         assert assembler.to_bytes().hex()[4:] == binary_encoding.hex()
-        assert assembler.labels_addresses[label_without_colon] == default_origin_address
+        assert (
+            assembler.code_labels_addresses[label_without_colon]
+            == default_origin_address
+        )
 
 
 class TestOperationsExceptions:

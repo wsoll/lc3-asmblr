@@ -111,3 +111,6 @@ class TestEnd:
 
         with pytest.raises(IndexError):
             assembler.read_assembly(line_2)
+
+
+# TODO: test for Pseudo-ops data labels

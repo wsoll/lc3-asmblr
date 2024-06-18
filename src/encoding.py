@@ -10,6 +10,10 @@ class PseudoOpCode:
     STRINGZ = ".STRINGZ"
     END = ".END"
 
+    @classmethod
+    def eligible_for_data_labels(cls) -> list[str]:
+        return [cls.BLKW, cls.FILL, cls.STRINGZ]
+
 
 class OpCode:
     ADD = "ADD"
@@ -28,6 +32,14 @@ class OpCode:
     STORE_INDIRECT = "STI"
     STORE_REGISTER = "STR"
     UNUSED = "RTI"
+
+    @classmethod
+    def eligible_for_code_labels(cls) -> list[str]:
+        return [
+            getattr(cls, attr)
+            for attr in dir(cls)
+            if not callable(getattr(cls, attr)) and not attr.startswith("__")
+        ]
 
 
 class OperandType(Enum):

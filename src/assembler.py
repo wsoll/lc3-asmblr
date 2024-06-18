@@ -2,7 +2,7 @@ from array import array
 from copy import deepcopy
 from typing import Generator
 
-from encoding import PseudoOpCode, Encoding, LABEL_IDENTIFIER
+from encoding import PseudoOpCode, Encoding, LABEL_IDENTIFIER, OpCode
 from instruction_set import InstructionSet
 from logger import Logger
 from syntax import (
@@ -28,6 +28,7 @@ class Assembler(InstructionSet, Logger):
         end_flag: set to true if encounters .END instruction in an assembly file to
             raise an exception if any instruction remains afterward.
         memory: actual encoding of assembly file that contains machine code for LC-3.
+        # ToDo: update
         labels_addresses: labels for instruction are followed by ':' on the beginning
             of an assembly line. It assigns a symbolic name to an address corresponding
             to the line, therefore there's a mapping between them.
@@ -42,7 +43,9 @@ class Assembler(InstructionSet, Logger):
 
         # ToDo-3: May be connected with line_counter
         self.memory = array("H", [0] * (1 << 16))
-        self.labels_addresses: dict[str, int] = {}
+        # ToDo: make keys type specific
+        self.data_labels_addresses: dict[str, int] = {}
+        self.code_labels_addresses: dict[str, int] = {}
 
     @staticmethod
     def load_assembly(filepath: str) -> Generator[str, None, None]:
@@ -55,7 +58,7 @@ class Assembler(InstructionSet, Logger):
             instruction = parse_instruction(line)
 
             if instruction[0].endswith(":"):
-                self.process_label(instruction[0][:-1])
+                self.process_label(instruction)
         self.program_counter = self.origin
 
     def read_assembly(self, line: str) -> None:
@@ -86,10 +89,27 @@ class Assembler(InstructionSet, Logger):
                 self.process_instruction(instruction, operation_key)
                 return
 
-    def process_label(self, label_without_colon: str) -> None:
-        if label_without_colon in self.labels_addresses:
+    def process_label(self, instruction: list[str]) -> None:
+        label_without_colon = instruction[0][:-1]
+        if label_without_colon in (
+            self.data_labels_addresses.keys(),
+            self.code_labels_addresses.keys(),
+        ):
             raise ValueError(f"Label duplication: {label_without_colon}")
-        self.labels_addresses[label_without_colon] = self.program_counter
+
+        instruction_without_label = instruction[1:]
+        for eligible_for_data_label in PseudoOpCode.eligible_for_data_labels():
+            if eligible_for_data_label in instruction_without_label:
+                # ToDo: .STRINGZ allocates more than 2 bytes.
+                self.data_labels_addresses[label_without_colon] = self.program_counter
+                return
+
+        for eligible_for_code_label in OpCode.eligible_for_code_labels():
+            if eligible_for_code_label in instruction_without_label:
+                self.code_labels_addresses[label_without_colon] = self.program_counter
+                return
+
+        raise SyntaxError(f"Unknown instruction for {label_without_colon} label.")
 
     def process_directive(self, instruction: list[str], code: str) -> None:
         match code:
