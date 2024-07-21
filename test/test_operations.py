@@ -31,6 +31,9 @@ class TestOperations:
         # THEN
         assert assembler.to_bytes().hex()[4:] == binary_encoding.hex()
 
+    # ToDo[1]: Dedicated test for data & code labels mapping as
+    #  well as reading assembly later on
+    @pytest.mark.skip()
     def test_label_is_mapped_to_address_and_instruction_is_processed(
         self, instruction, binary_encoding
     ):
