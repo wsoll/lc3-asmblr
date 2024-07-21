@@ -28,6 +28,7 @@ class OpCode:
     STORE_INDIRECT = "STI"
     STORE_REGISTER = "STR"
     UNUSED = "RTI"
+    # ToDo[1]: implement TRAP x20-x25 (GETC, OUT, PUTS, IN, HALT)
 
 
 def eligible_for_data_labels() -> list[str]:

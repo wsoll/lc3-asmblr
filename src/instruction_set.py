@@ -23,7 +23,8 @@ class InstructionSet:
                 | OpCode.STORE
                 | OpCode.STORE_INDIRECT
             ):
-                ...
+                # ToDo[1]: Implement after "distinguish data from code labels[...]"
+                raise NotImplementedError()
             case OpCode.LOAD_REGISTER | OpCode.STORE_REGISTER:
                 return self.get_6_bit_signed_offset_encoding(operands)
             case OpCode.BITWISE_NOT:

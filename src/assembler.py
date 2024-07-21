@@ -2,7 +2,13 @@ from array import array
 from copy import deepcopy
 from typing import Generator
 
-from encoding import PseudoOpCode, Encoding, LABEL_IDENTIFIER, OpCode
+from encoding import (
+    PseudoOpCode,
+    Encoding,
+    LABEL_IDENTIFIER,
+    eligible_for_data_labels,
+    eligible_for_code_labels,
+)
 from instruction_set import InstructionSet
 from logger import Logger
 from syntax import (
@@ -28,7 +34,7 @@ class Assembler(InstructionSet, Logger):
         end_flag: set to true if encounters .END instruction in an assembly file to
             raise an exception if any instruction remains afterward.
         memory: actual encoding of assembly file that contains machine code for LC-3.
-        # ToDo: update
+        # ToDo[3]: update in accordance to data & code labels addresses
         labels_addresses: labels for instruction are followed by ':' on the beginning
             of an assembly line. It assigns a symbolic name to an address corresponding
             to the line, therefore there's a mapping between them.
@@ -41,9 +47,9 @@ class Assembler(InstructionSet, Logger):
         self.line_counter = -1
         self.end_flag = False
 
-        # ToDo-3: May be connected with line_counter
+        # ToDo[3]: May be connected with line_counter
         self.memory = array("H", [0] * (1 << 16))
-        # ToDo: make keys type specific
+        # ToDo[3]: make keys type specific
         self.data_labels_addresses: dict[str, int] = {}
         self.code_labels_addresses: dict[str, int] = {}
 
@@ -66,7 +72,6 @@ class Assembler(InstructionSet, Logger):
             raise IndexError("Main program is finished after '.END' directive.")
         self.line_counter += 1
 
-        # ToDo: Check if code exists in line, parse separately for directive and opcode
         instruction = parse_instruction(line)
 
         if not instruction:
@@ -98,13 +103,15 @@ class Assembler(InstructionSet, Logger):
             raise ValueError(f"Label duplication: {label_without_colon}")
 
         instruction_without_label = instruction[1:]
-        for eligible_for_data_label in PseudoOpCode.eligible_for_data_labels():
+        # ToDo[2]: distinguish data from code labels (for LEA that could work for both)
+        #  based on Explicit addressing.
+        for eligible_for_data_label in eligible_for_data_labels():
             if eligible_for_data_label in instruction_without_label:
-                # ToDo: .STRINGZ allocates more than 2 bytes.
+                # ToDo[2]: .STRINGZ allocates more than 2 bytes.
                 self.data_labels_addresses[label_without_colon] = self.program_counter
                 return
 
-        for eligible_for_code_label in OpCode.eligible_for_code_labels():
+        for eligible_for_code_label in eligible_for_code_labels():
             if eligible_for_code_label in instruction_without_label:
                 self.code_labels_addresses[label_without_colon] = self.program_counter
                 return
@@ -127,8 +134,6 @@ class Assembler(InstructionSet, Logger):
                 self.end_flag = True
 
     def process_instruction(self, instruction: list[str], operation_code: str) -> None:
-        # ToDo: process BR/BRANCH firsts.
-        # ToDo: With or Without label.
         binary_representation = 0x0000
         binary_representation |= Encoding.OPERATION[operation_code]
 
@@ -177,12 +182,13 @@ class Assembler(InstructionSet, Logger):
         """
         arg_count = validate_directive_syntax(instruction, ".FILL")
 
-        # ToDo-1: remove duplication if pattern
+        # ToDo[2]: remove duplication if pattern
         operand = instruction[arg_count.value - 1]
         if is_numeral_base_prefixed(operand):
             value = cast_to_numeral(operand)
             self.write_to_memory(value)
         elif is_valid_goto_label(operand):
+            # ToDo[1]: verify if still valid & implement data labels
             raise NotImplementedError()
         else:
             msg = "Invalid '.FILL' operand."
@@ -202,13 +208,14 @@ class Assembler(InstructionSet, Logger):
 
         arg_count = validate_directive_syntax(instruction, ".BLKW")
 
-        operand = instruction[arg_count.value - 1]  # ToDo: (ToDo-1 reference)
+        operand = instruction[arg_count.value - 1]
         if is_numeral_base_prefixed(operand):
             words_to_allocate = cast_to_numeral(
                 operand, allow_hexadecimal=False, allow_binary=False
             )
             self.program_counter += words_to_allocate
         elif is_valid_goto_label(operand):
+            # ToDo[1]: verify if still valid & implement data labels
             raise NotImplementedError()
         else:
             msg = "Invalid '.BLKW' operand."

@@ -10,6 +10,7 @@ class DirectiveArgCount(Enum):
     WITH_GOTO_LABEL = 3
 
 
+# ToDo[2]: works only for inline code
 def parse_instruction(line: str) -> list[str]:
     line_without_comment = line.split(";")[0]
     line_without_tabs = line_without_comment.replace("\t", "")
@@ -55,7 +56,6 @@ def is_numeral_base_prefixed(operand: str) -> bool:
     )
 
 
-# ToDo: think of key as literal type
 def validate_directive_syntax(
     instruction: list[str], directive_code: OperandsDirective
 ) -> DirectiveArgCount:
