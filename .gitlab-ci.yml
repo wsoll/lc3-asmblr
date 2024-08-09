@@ -26,8 +26,8 @@ build-qa-image:
     - changes:
       - requirements_qa.txt
       - Dockerfile.qa
-      when: always
-    - when: never
+      when: on_success
+    - when: manual
 
 .lint:
   stage: lint
