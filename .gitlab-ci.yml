@@ -36,6 +36,7 @@ build-qa-image:
     - cat pyproject.toml
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - when: never
 
 lint:flake8:
   extends: .lint
