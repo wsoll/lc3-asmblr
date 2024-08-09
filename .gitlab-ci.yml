@@ -14,7 +14,7 @@ default:
 stages:
   - qa_prerequisite
   - lint
-
+# ABC
 build-qa-image:
   stage: qa_prerequisite
   image: docker:24.0.5-dind
