@@ -3,7 +3,7 @@ variables:
   QA_IMAGE_VERSION: 1
 
 # To use Docker to build Docker images
-# https://docs.gitlab.com/ee/ci/docker/using_docker_build.html
+# https://docs.gitlab.com/ee/ci/docker/using_docker_build.html
 default:
   image: docker:24.0.5
   services:
