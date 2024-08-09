@@ -1,5 +1,15 @@
+# ToDo: automate for file changes
 variables:
-  QA_IMAGE_VERSION: 1  # ToDo: automate for file changes
+  QA_IMAGE_VERSION: 1
+
+# To use Docker to build Docker images
+# https://docs.gitlab.com/ee/ci/docker/using_docker_build.html
+default:
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - docker info
 
 stages:
   - qa_prerequisite
@@ -7,6 +17,7 @@ stages:
 
 build-qa-image:
   stage: qa_prerequisite
+  image: docker:24.0.5-dind
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -f Dockerfile.qa -t ${CI_REGISTRY_IMAGE}:{QA_IMAGE_VERSION} .
