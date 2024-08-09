@@ -38,14 +38,14 @@ build-qa-image:
 lint:flake8:
   extends: .lint
   script:
-    - flake8 -v src/ test/
+    - flake8 -v --config=pyproject.toml src/ test/
 
 lint:black:
   extends: .lint
   script:
-    - black -v --check src/ test/
+    - black -v --config pyproject.toml --check src/ test/
 
 lint:mypy:
   extends: .lint
   script:
-    - mypy --verbose src/
+    - mypy --verbose --config-file pyproject.toml src/
