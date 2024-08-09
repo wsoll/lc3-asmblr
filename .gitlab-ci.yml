@@ -38,14 +38,14 @@ build-qa-image:
 lint:flake8:
   extends: .lint
   script:
-    - flake8
+    - flake8 -v src/ test/
 
 lint:black:
   extends: .lint
   script:
-    - black --check
+    - black -v --check src/ test/
 
 lint:mypy:
   extends: .lint
   script:
-    - mypy .
+    - mypy --verbose src/
