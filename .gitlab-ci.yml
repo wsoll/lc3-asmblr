@@ -20,7 +20,7 @@ build-qa-image:
   image: docker:24.0.5-dind
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -f Dockerfile.qa -t ${CI_REGISTRY_IMAGE}:{QA_IMAGE_VERSION} .
+    - docker build -f Dockerfile.qa -t ${CI_REGISTRY_IMAGE}:${QA_IMAGE_VERSION} .
     - docker push ${CI_REGISTRY_IMAGE}
   rules:
     - changes:
