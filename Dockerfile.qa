@@ -1,0 +1,4 @@
+from python:3.11-slim-buster
+
+COPY requirements_qa.txt .
+RUN pip install -r ./requirements_qa.txt
