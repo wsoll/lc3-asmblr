@@ -1,0 +1,23 @@
+stages:
+  - lint
+
+.lint:
+  stage: lint
+  image: $CI_REGISTRY_IMAGE:latest
+  before_script:
+    - cat pyproject.toml
+
+lint:flake8:
+  extends: .lint
+  script:
+    - flake8
+
+lint:black:
+  extends: .lint
+  script:
+    - black --check
+
+lint:mypy:
+  extends: .lint
+  script:
+    - mypy .
