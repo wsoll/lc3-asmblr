@@ -27,7 +27,7 @@ build-qa-image:
       - requirements_qa.txt
       - Dockerfile.qa
       when: always
-    - when: manual
+    - when: never
 
 .lint:
   stage: lint
